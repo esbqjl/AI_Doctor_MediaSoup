@@ -44,7 +44,7 @@ By adding query parameters into the URL you can set certain settings of the appl
 * Clone the project:
 
 ```bash
-$ git clone https://github.com/versatica/mediasoup-demo.git
+$ git clone [https://github.com/versatica/mediasoup-demo.git](https://github.com/esbqjl/AI_Doctor_MediaSoup.git)
 $ cd mediasoup-demo
 $ git checkout v3
 ```
