@@ -16,6 +16,7 @@ const os = require('os');
 const FFmpeg = require('./ffmpeg');
 const ffmpeg = require('ffmpeg');
 
+const FFmpeg_extra = require('./ffmpeg_extra');
 /**
  * Room class.
  *
@@ -221,13 +222,13 @@ class Room extends EventEmitter
 		try {
 		// 创建 plain transport 用于音频
 		const audioTransport = await this._mediasoupRouter.createPlainTransport({
-			listenIp: {ip:"10.0.0.124"},
+			listenIp: {ip:'192.168.50.175'},
 			rtcpMux: false,
 			
 			
 		});
 	
-		const remoteAudioIp = '10.0.0.124';
+		const remoteAudioIp = '192.168.50.175';
 		const remoteAudioPort = 5008; // 你希望 FFmpeg 接收音频的端口
 		let remoteRtcpPort = remoteAudioPort+1;
 		
@@ -281,7 +282,7 @@ class Room extends EventEmitter
 
 		recordInfo['audio']={remoteAudioPort, remoteRtcpPort, rtpCapabilities, rtpParameters };
 
-		this._recordingProcess = new FFmpeg(recordInfo);
+		this._recordingProcess = new FFmpeg_extra(recordInfo);
 	
 		this._recording = true;
 

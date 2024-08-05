@@ -61,9 +61,9 @@ module.exports = class FFmpeg {
 
     // 创建SDP内容字符串
     return `v=0
-    o=- 0 0 IN IP4 10.0.0.124
+    o=- 0 0 IN IP4 192.168.50.175
     s=FFmpeg
-    c=IN IP4 10.0.0.124
+    c=IN IP4 192.168.50.175
     t=0 0
     m=audio ${audio.remoteAudioPort} RTP/AVP ${audioCodecInfo.payloadType}
     a=rtpmap:${audioCodecInfo.payloadType} ${audioCodecInfo.codecName}/${audioCodecInfo.clockRate}/${audioCodecInfo.channels}

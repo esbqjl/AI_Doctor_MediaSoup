@@ -1,0 +1,14 @@
+{
+    "type": "service_account",
+    "project_id": "amiable-hydra-197903",
+    "private_key_id": "ed374b32e3c1e975864b7899be8f29bae751035f",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCwui5lftmsny7Y\n+oYTF56sXH9I8nWqWT4n/IhWhBnWqADoCFCfqGaFxrz9oRtqbbz27olhD1LG1y6t\np0/PnhFceDp5KEj87lKCl+TCLpqD272hFA8/cDrD16ScTNYF1maE+RX2FG271hb/\nBj7PJ1fHh1ReP0YdvlkRflWCIrl6ji56T4aBduYc4eg8D8XiNYnk6gRDRw/sYOYN\n+pa+UuhkUwtk4w3cBqcNhXKDX3WayPxUqt5wdhuw7vvO62CcK0Lxx4em7ewc/K9I\nuHUFSJYDvV4tbu0UtvngVPAlT5V94nJ8EZZ1m2SvJxpGXgyVV1E2a15c8sZzKj7A\n6eVcd0/pAgMBAAECggEABQiWgfZMF6A0jsJK75AGiVD8oJykSJDwZeXp0bIDROOF\n3BYBityaZ/DGSQCN1fkQbuWSJOExeb+fARvw+GA/jRdRDgqdUpPspnLSVYwLg1ou\nw1/dg9Br4hBaLEf9eA7YXmz0SM0h533Ua5jXUOHlXIXgm6sYcYguhAKpx5I633BR\nUVHzDiGd9kY38a+BNSsYifcUdZYajOG3iU8LqHeT0oRW+AuN/i0gmZ8Yf4Gmp7ou\nBLvTHCpTghwYZBWnSlbWSPr9h1c3Mfkx/yQ/YChaCr43X02TSqWnntyhE3O+9X0h\nV0dKfi5qCHjinwE/rAS6nliW9q+Mcngwz2pvZYjZ0QKBgQDw9qxAyW0vcXnr7gsb\nIE8ack0fKevMiKcqtzuwogNcpvdrLjKuHqKkN8lYl2tNxR4ZYgwQHO7Z5YYu0Pb6\nBfCcLmBSu+SCrKfQnVZNlaTgB0SKVaL/Du+/LuZ8glMFAz292MeWpxCZWNjIRwmp\nrYdG0kJQeUWrmCapVT4xLadB+QKBgQC7wVnh0G0hrOg9DQA91v8B6UMXgvwH6/F+\nKxIVGTW0oWjLNSAtTpg1aFnn0KzwBAukvy2HGPVprbP9q9mAw/vspaOVffSCY/x7\nvbXYUN7YRt9c0JYjcdblUUZp413hsE5/m/Nn4yB1q7mJ2RVyR9h0zmK3RzmtqvFO\nDkrI2Dj5cQKBgB/UZcKVGPAobDOHGT53ERvsN1XDgttcvcA9vgvCCvGlOI+W5ajs\ncQ2CNP2X2tvGCwjNU8yZFdAAqq3qeoViXXs0ARNMsI22YuCCuBC9kK7rJtmjIEnS\n3kaB2n5d9Lt3xyMZzJuQ6/dlrhUelR8txe3L/miE7HgTPCAoG3QBlNN5AoGAHR5b\nhj4A7twWGIHPq8eQPQekNB1IYSIijeK4JzWFssHlsr5Gg0BRMtdAOkeOypqWA7Ly\nqKUiSoV6CLmCPgonJAh8Wk7ygNZo7ff6H9ZK+VfkhEyFPHIHVgFI3ls40Cu7wOa6\n1T3QZu9/EvXr8ZFa7KKlhK8zLs/4JJbq2kNOcsECgYBDmccn4n258BrLIjcvLjFS\nyVvupZT4sE5Eyp6SM/Dm3yS7Vfc44eMEoq3dbO0T9dznJTfHWaFVDL7UP0M06OBt\nscrpsQeeqRhhgepv6Jp1amUuVm04+PzoR3MLNDKrw4cfRT+Mdo4Pe0cwMlPFdLxh\nuz+mnCplN9XOgCeo4T0Peg==\n-----END PRIVATE KEY-----\n",
+    "client_email": "personal-project@amiable-hydra-197903.iam.gserviceaccount.com",
+    "client_id": "113964618022725668620",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/personal-project%40amiable-hydra-197903.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+  }
+  
