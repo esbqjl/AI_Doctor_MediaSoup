@@ -1,7 +1,7 @@
 const EventEmitter = require('events').EventEmitter;
 const mediasoup = require('mediasoup');
 const protoo = require('protoo-server');
-const rtp = require('rtp.js');
+// const rtp = require('rtp.js');
 const throttle = require('@sitespeed.io/throttle');
 const Logger = require('./Logger');
 const utils = require('./utils');
@@ -9,14 +9,12 @@ const config = require('../config');
 const Bot = require('./Bot');
 const axios = require('axios');
 const logger = new Logger('Room');
-const { spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const FFmpeg = require('./ffmpeg');
-const ffmpeg = require('ffmpeg');
-
-const FFmpeg_extra = require('./ffmpeg_extra');
+// const path = require('path');
+const net = require('net');
+const usedPorts = new Set();
+const FFmpeg= require('./ffmpeg');
+global.recordingStatus = {};
+global.recordingStatus[this._roomId]
 /**
  * Room class.
  *
@@ -212,90 +210,94 @@ class Room extends EventEmitter
 	// 开始录制的方法
 	async startRecording(producer) {
 		let recordInfo = {};
-		
+		logger.debug("producer.id",producer.id);
 		if (this._recording) {
-		throw new Error('Recording is already in progress');
+		  throw new Error('Recording is already in progress');
+		}
+		if (global.recordingStatus[this._roomId]) {
+			throw new Error('Recording is already in progress for this room');
 		}
 	
+		global.recordingStatus[this._roomId] = true;
+	  
 		await new Promise(resolve => setTimeout(resolve, 1000));
-	
+	  
 		try {
-		// 创建 plain transport 用于音频
-		const audioTransport = await this._mediasoupRouter.createPlainTransport({
-			listenIp: {ip:'192.168.50.175'},
-			rtcpMux: false,
-			
-			
-		});
-	
-		const remoteAudioIp = '192.168.50.175';
-		const remoteAudioPort = 5008; // 你希望 FFmpeg 接收音频的端口
-		let remoteRtcpPort = remoteAudioPort+1;
+			// 创建 plain transport 用于音频
+			const audioTransport = await this._mediasoupRouter.createPlainTransport({
+				listenIp: { ip: '192.168.50.175' },
+				rtcpMux: false,
+			});
 		
-		await audioTransport.connect({ ip: remoteAudioIp, port: remoteAudioPort, rtcpPort: remoteAudioPort+1 });
+			const remoteAudioIp = '192.168.50.175';
 		
-		console.log(
-			"mediasoup AUDIO RTP SEND transport connected: %s:%d <--> %s:%d (%s)",
-			audioTransport.tuple.localIp,
-			audioTransport.tuple.localPort,
-			audioTransport.tuple.remoteIp,
-			audioTransport.tuple.remotePort,
-			audioTransport.tuple.protocol
-		);
-	
-		console.log(
-			"mediasoup AUDIO RTCP SEND transport connected: %s:%d <--> %s:%d (%s)",
-			audioTransport.rtcpTuple.localIp,
-			audioTransport.rtcpTuple.localPort,
-			audioTransport.rtcpTuple.remoteIp,
-			audioTransport.rtcpTuple.remotePort,
-			audioTransport.rtcpTuple.protocol
-		);
+			// allocate port for ffmpeg
+			let audioPort, rtcpPort;
+			try {
+				({ audioPort, rtcpPort } = await this.getRandomAvailableEvenPortPair(8000, 9000));
+				console.log(`Found available ports: Audio port ${audioPort}, RTCP port ${rtcpPort}`);
+			} catch (err) {
+				console.error('Error finding available ports:', err);
+				throw new Error('Failed to allocate ports');
+			}
 		
-	
-		// const audioProducer = Array.from(this._protooRoom.peers.values())
-		// 	.flatMap(peer => Array.from(peer.data.producers.values()))
-		// 	.find(producer => producer.kind === 'audio');
-	
-		const audioProducer = producer;
-
-		if (!audioProducer) {
-			throw new Error('Audio producer not found');
-		}
-	
-		const audioSsrc = audioProducer.rtpParameters.encodings[0].ssrc;
-		const audioPayloadType = audioProducer.rtpParameters.codecs[0].payloadType;
-	
+			// 连接到远程地址和端口
+			await audioTransport.connect({ ip: remoteAudioIp, port: audioPort, rtcpPort: rtcpPort });
+	  
+			console.log(
+				"mediasoup AUDIO RTP SEND transport connected: %s:%d <--> %s:%d (%s)",
+				audioTransport.tuple.localIp,
+				audioTransport.tuple.localPort,
+				audioTransport.tuple.remoteIp,
+				audioTransport.tuple.remotePort,
+				audioTransport.tuple.protocol
+			);
+	  
+			console.log(
+				"mediasoup AUDIO RTCP SEND transport connected: %s:%d <--> %s:%d (%s)",
+				audioTransport.rtcpTuple.localIp,
+				audioTransport.rtcpTuple.localPort,
+				audioTransport.rtcpTuple.remoteIp,
+				audioTransport.rtcpTuple.remotePort,
+				audioTransport.rtcpTuple.protocol
+			);
+	  
+		  	// const audioProducer = Array.from(this._protooRoom.peers.values())
+			// 	.flatMap(peer => Array.from(peer.data.producers.values()))
+			// 	.find(producer => producer.kind === 'audio');
 		
-		
-		const outputFilePath = path.join(__dirname, 'audio', `${this._roomId}.webm`);
-
-		const rtpCapabilities = this._mediasoupRouter.rtpCapabilities;
-
-		const rtpConsumer = await audioTransport.consume({
-			producerId: audioProducer.id,
-			rtpCapabilities,
-			paused: false
-		});
-
-		const rtpParameters  = rtpConsumer.rtpParameters;
-
-		recordInfo['audio']={remoteAudioPort, remoteRtcpPort, rtpCapabilities, rtpParameters };
-
-		this._recordingProcess = new FFmpeg_extra(recordInfo);
-	
-		this._recording = true;
-
-		
-		console.log(`Recording started for room ${this._roomId}`);
+			const audioProducer = producer;
+	  
+			if (!audioProducer) {
+				throw new Error('Audio producer not found');
+			}
+	  
+			const rtpCapabilities = this._mediasoupRouter.rtpCapabilities;
+			const rtpConsumer = await audioTransport.consume({
+				producerId: audioProducer.id,
+				rtpCapabilities,
+				paused: false
+			});
+	  
+			const rtpParameters = rtpConsumer.rtpParameters;
+		  	recordInfo['audio'] = { audioPort, rtcpPort, rtpCapabilities, rtpParameters};
+			const roomId = this._roomId;
+		  	this._recordingProcess = new FFmpeg(recordInfo, roomId);
+		  	this._recording = true;
+	  
+		  	console.log(`Recording started for room ${this._roomId}`);
 		} catch (error) {
-			console.error('Failed to start recording:', error);
+		  	console.error('Failed to start recording:', error);
 		}
 	}
-	// 停止录制的方法
+	// stop recording function
 	stopRecording() {
 		if (!this._recording) {
 			console.error('No recording is in progress');
+			return;
+		}
+		if (!global.recordingStatus[this._roomId]) {
+			console.error('No recording is in progress for this room');
 			return;
 		}
 	
@@ -310,7 +312,7 @@ class Room extends EventEmitter
 		} catch (error) {
 			console.error(`Error stopping recording for room ${this._roomId}:`, error);
 		}
-	
+		global.recordingStatus[this._roomId] = false;
 		this._recording = false;
 	}
 
@@ -2098,23 +2100,47 @@ class Room extends EventEmitter
 			logger.warn('_createDataConsumer() | failed:%o', error);
 		}
 	}
-	async createSdpFile(audioSsrc, audioPayloadType, audioPort) {
-		const sdpContent = `
-			v=0
-			o=- 0 0 IN IP4 10.0.0.124
-			s=ffmpeg
-			c=IN IP4 10.0.0.124
-			t=0 0
-			m=audio ${audioPort} RTP/AVP ${audioPayloadType}
-			a=rtpmap:${audioPayloadType} opus/48000/2
-			a=sendonly
-			a=ssrc:${audioSsrc} cname:audio
-			`;
-	  
-		const sdpFilePath = path.join(__dirname, `${this._roomId}.sdp`);
-		fs.writeFileSync(sdpFilePath, sdpContent.trim());
-		return sdpFilePath;
+	/**
+	* Check if a port is available.
+	* @param {number} port - The port number to check.
+	* @returns {Promise<boolean>} - A promise that resolves to true if the port is available, false otherwise.
+	*/
+	async isPortAvailable(port) {
+		return new Promise((resolve) => {
+		const server = net.createServer();
+	
+		server.once('error', () => {
+			resolve(false); // Port is not available
+		});
+	
+		server.once('listening', () => {
+			server.close(() => {
+			resolve(true); // Port is available
+			});
+		});
+	
+		server.listen(port);
+		});
 	}
+  
+   /**
+   * Get an even random available port in a specified range and its next port (for RTCP).
+   * @param {number} min - The minimum port number in the range.
+   * @param {number} max - The maximum port number in the range.
+   * @returns {Promise<{ audioPort: number, rtcpPort: number }>} - A promise that resolves to an object containing the available audio and RTCP ports.
+   */
+  	async getRandomAvailableEvenPortPair(min, max) {
+		while (true) {
+			// Ensure the selected port is even
+			const audioPort = Math.floor(Math.random() * ((max - min) / 2)) * 2 + min;
+			const rtcpPort = audioPort + 1;
+		
+			// Check if both ports are available
+			if (await this.isPortAvailable(audioPort)) {
+				return { audioPort, rtcpPort };
+			}
+		}
+  	}
 }
 
 

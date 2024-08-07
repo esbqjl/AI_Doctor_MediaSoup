@@ -4,68 +4,123 @@ const child_process = require('child_process');
 const { EventEmitter } = require('events');
 const { getCodecInfoFromRtpParameters } = require('./utils');
 const RECORD_FILE_LOCATION_PATH = 'audio';
-const SDP_FILE_PATH = path.join(__dirname, 'current.sdp');
 
 const Logger = require('./Logger');
 const logger = new Logger('sdp');
+const speech = require('@google-cloud/speech');
+const client = new speech.SpeechClient({
+  keyFilename: path.join(__dirname, 'Google.json')
+});
+
 module.exports = class FFmpeg {
-  constructor(rtpParameters) {
+  constructor(rtpParameters, roomId) {
     this._rtpParameters = rtpParameters;
     this._process = undefined;
     this._observer = new EventEmitter();
+    this._audioBuffer = []; // to store audio buffer
+    this._uploadInterval = null; // set certain time to upload audio
+    this._roomId = roomId;
+    this._sdpFilePath = null;
     this._createProcess();
+    
+    
+    
   }
 
   _createProcess() {
-    // 创建SDP内容并写入文件
     const sdpContent = this._createSdpText(this._rtpParameters);
-    fs.writeFileSync(SDP_FILE_PATH, sdpContent);
-
-    console.log('SDP content written to file:', SDP_FILE_PATH);
-
-    // 启动ffmpeg进程
+    logger.debug("undefined?",this._roomId);
+    this._sdpFilePath = path.join(__dirname, '/audio/', `${this._roomId}.sdp`);
+    fs.writeFileSync(this._sdpFilePath, sdpContent);
+    console.log('SDP content written to file:', this._sdpFilePath);
     this._process = child_process.spawn('ffmpeg', this._commandArgs);
 
     if (this._process.stderr) {
       this._process.stderr.setEncoding('utf-8');
-      this._process.stderr.on('data', data =>
-        console.log('ffmpeg::process::data [data:%o]', data)
-      );
+      this._process.stderr.on('data', data => console.log('ffmpeg::process::data [data:%o]', data));
     }
 
     if (this._process.stdout) {
-      this._process.stdout.setEncoding('utf-8');
-      this._process.stdout.on('data', data =>
-        console.log('ffmpeg::process::data [data:%o]', data)
-      );
+      this._process.stdout.on('data', data => this._onData(data));
     }
 
-    this._process.on('message', message =>
-      console.log('ffmpeg::process::message [message:%o]', message)
-    );
-
-    this._process.on('error', error =>
-      console.error('ffmpeg::process::error [error:%o]', error)
-    );
-
+    this._process.on('error', error => console.error('ffmpeg::process::error [error:%o]', error));
     this._process.once('close', () => {
       console.log('ffmpeg::process::close');
       this._observer.emit('process-close');
+      clearInterval(this._uploadInterval); // stop certain time upload task
     });
+
+    this._startUploadInterval(); // click off certian time upload task
+  }
+
+  _onData(data) {
+    // make sure data is contained in Buffer
+    if (Buffer.isBuffer(data)) {
+      this._audioBuffer.push(data);
+    } else {
+      this._audioBuffer.push(Buffer.from(data));
+    }
+  }
+
+  _startUploadInterval() {
+    this._uploadInterval = setInterval(() => this._uploadAudio(), 8000); // upload this in every certain seconds
+  }
+
+  async _uploadAudio() {
+    if (this._audioBuffer.length === 0) return;
+
+    // 使用 Buffer.concat 来组合所有音频数据块
+    const audioData = Buffer.concat(this._audioBuffer);
+    const { audio } = this._rtpParameters;
+    
+    try {
+      fs.appendFileSync(path.join(__dirname, '/audio/',`${this._roomId}.wav`), audioData);
+      console.log('Audio data appended to audio_test.wav for verification.');
+    } catch (err) {
+      console.error('Error appending audio data to file:', err);
+    }
+    
+    this._audioBuffer = []; // cleanup that buffer
+
+    const request = {
+      config: {
+        encoding: 'LINEAR16',
+        sampleRateHertz: 16000,
+        languageCode: 'en-US',
+      },
+      audio: {
+        content: audioData.toString('base64'),
+      },
+    };
+
+    try {
+      const [response] = await client.recognize(request);
+      if (response.results.length > 0) {
+        const transcription = response.results
+          .map(result => result.alternatives[0].transcript)
+          .join('\n');
+        console.log(`Room ${this._roomId} Transcription: ${transcription}`);
+        fs.appendFileSync(path.join(__dirname, '/audio/',`${this._roomId}.txt`), `${transcription}\n `);
+        this._observer.emit('transcription', transcription); // send this to event
+      } else {
+        console.log(`Room ${this._roomId} No transcription results received.`);
+      }
+    } catch (error) {
+      console.error(`Room ${this._roomId} Error recognizing audio:`, error);
+    }
   }
 
   _createSdpText(rtpParameters) {
     const { audio } = rtpParameters;
-    logger.debug("audio.port",audio.rtpParameters.encodings);
     const audioCodecInfo = getCodecInfoFromRtpParameters('audio', audio.rtpParameters);
 
-    // 创建SDP内容字符串
     return `v=0
     o=- 0 0 IN IP4 192.168.50.175
     s=FFmpeg
     c=IN IP4 192.168.50.175
     t=0 0
-    m=audio ${audio.remoteAudioPort} RTP/AVP ${audioCodecInfo.payloadType}
+    m=audio ${audio.audioPort} RTP/AVP ${audioCodecInfo.payloadType}
     a=rtpmap:${audioCodecInfo.payloadType} ${audioCodecInfo.codecName}/${audioCodecInfo.clockRate}/${audioCodecInfo.channels}
     a=sendonly
     `;
@@ -81,26 +136,22 @@ module.exports = class FFmpeg {
       '-loglevel', 'debug',
       '-protocol_whitelist', 'file,crypto,data,udp,rtp',
       '-f', 'sdp',
-      '-i', SDP_FILE_PATH,
+      '-i', this._sdpFilePath,
       '-listen_timeout', '15'
     ];
 
-    // 仅包含音频参数
     commandArgs = commandArgs.concat(this._audioArgs);
-
-    commandArgs = commandArgs.concat([
-      `${__dirname}/${RECORD_FILE_LOCATION_PATH}/121.mp4`
-    ]);
-
-    console.log('commandArgs:%o', commandArgs);
-
     return commandArgs;
   }
 
   get _audioArgs() {
     return [
       '-map', '0:a:0',
-      '-c:a', 'copy'   // 复制音频流，不重新编码
+      '-c:a', 'pcm_s16le',
+      '-ar', '16000',
+      '-ac', '1',
+      '-f', 'wav',
+      'pipe:1'
     ];
   }
 };
