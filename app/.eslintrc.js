@@ -98,7 +98,7 @@ module.exports =
 		'no-catch-shadow': 2,
 		'no-class-assign': 2,
 		'no-confusing-arrow': 2,
-		'no-console': 2,
+		'no-console': 0,
 		'no-const-assign': 2,
 		'no-debugger': 2,
 		'no-dupe-args': 2,

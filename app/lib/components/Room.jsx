@@ -12,6 +12,7 @@ import Me from './Me';
 import ChatInput from './ChatInput';
 import Peers from './Peers';
 import Stats from './Stats';
+import Ai from './Ai';
 import Notifications from './Notifications';
 import NetworkThrottle from './NetworkThrottle';
 
@@ -130,7 +131,7 @@ class Room extends React.Component
 					</div>
 
 					<Stats />
-
+					<Ai    />
 					<If condition={window.NETWORK_THROTTLE_SECRET}>
 						<NetworkThrottle
 							secret={window.NETWORK_THROTTLE_SECRET}

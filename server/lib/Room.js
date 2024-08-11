@@ -166,12 +166,18 @@ class Room extends EventEmitter
 		this._socket.on('connect', () => {
 			console.log('Connected to Flask-SocketIO server');
 		  
-			// 示例：发送初始消息
+			// For debugging
 			this._socket.emit('transcript', {
 			  roomId: this.roomId,
 			  transcription: 'This is a test transcription.'
 			});
 		});
+
+		// stored data
+		this._cdsQaData = null;
+		this._cdsHpiData = null;
+		this._cdsDdxData = null;
+
 
 		// Handle connection errors
 		this._socket.on('connect_error', (error) => {
@@ -181,6 +187,19 @@ class Room extends EventEmitter
 		// Handle connection timeout
 		this._socket.on('connect_timeout', () => {
 			console.error('Connection timed out.');
+		});
+
+		// 实时接收数据并调用 handleSocketData 处理
+		this._socket.on('cds_ddx', (data) => {
+			this.handleSocketData('cds_ddx', data);
+		});
+	  
+		this._socket.on('cds_qa', (data) => {
+			this.handleSocketData('cds_qa', data);
+		});
+	  
+		this._socket.on('cds_hpi', (data) => {
+			this.handleSocketData('cds_hpi', data);
 		});
 
 		
@@ -299,7 +318,7 @@ class Room extends EventEmitter
 			const rtpConsumer = await audioTransport.consume({
 				producerId: audioProducer.id,
 				rtpCapabilities,
-				paused: false
+				paused: true
 			});
 	  
 			const rtpParameters = rtpConsumer.rtpParameters;
@@ -314,7 +333,7 @@ class Room extends EventEmitter
 				});
 			});
 		  	this._recording = true;
-	  
+			rtpConsumer.resume();
 		  	console.log(`Recording started for room ${this._roomId}`);
 		} catch (error) {
 		  	console.error('Failed to start recording:', error);
@@ -459,6 +478,7 @@ class Room extends EventEmitter
 				this.close();
 			}
 		});
+		
 	}
 
 	getRouterRtpCapabilities()
@@ -1719,6 +1739,45 @@ class Room extends EventEmitter
 				break;
 			}
 
+			case 'getCdsQa':
+			{
+				// check if cdsQaData is null or not
+				if (!this._cdsQaData) {
+					throw new Error(`No cds_qa data available`);
+				}
+
+				// we send the data back to the client
+				accept(this._cdsQaData);
+
+				break;
+			}
+
+			case 'getCdsDdx':
+			{
+				// check if cdsQaData is null or not
+				if (!this._cdsDdxData) {
+					throw new Error(`No cds_qa data available`);
+				}
+
+				// we send the data back to the client
+				accept(this._cdsDdxData);
+
+				break;
+			}
+
+			case 'getCdsHpi':
+			{
+				// check if cdsQaData is null or not
+				if (!this._cdsHpiData) {
+					throw new Error(`No cds_qa data available`);
+				}
+
+				// we send the data back to the client
+				accept(this._cdsHpiData);
+
+				break;
+			}
+
 			case 'getConsumerStats':
 			{
 				const { consumerId } = request.data;
@@ -2172,6 +2231,44 @@ class Room extends EventEmitter
 			}
 		}
   	}
+	// we can process data here
+	async handleSocketData(eventType, data) {
+		switch (eventType) {
+		  case 'cds_ddx':
+			this.processDdxData(data);
+			break;
+		  case 'cds_qa':
+			this.processQaData(data);
+			break;
+		  case 'cds_hpi':
+			this.processHpiData(data);
+			break;
+		  default:
+			console.warn(`Unknown event type: ${eventType}`);
+			break;
+		}
+	}
+	
+	// Process Data and send this to Frontend
+	processDdxData(data) {
+		console.log('Processing DDX data:', data);
+		this._cdsDdxData = data;
+		
+	}
+
+	
+	processQaData(data) {
+		console.log('Processing QA data:', data);
+		this._cdsQaData = data;
+	
+	}
+
+	
+	processHpiData(data) {
+		console.log('Processing HPI data:', data);
+		this._cdsHpiData = data;
+	}
+	
 }
 
 

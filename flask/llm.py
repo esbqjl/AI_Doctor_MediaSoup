@@ -25,6 +25,7 @@ gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.2)
 # gpt4 = ChatOpenAI(model='gpt-4', temperature=0,model_kwargs={"top_p": 0},
 #                   # streaming=True, 
 #                   verbose=True)
+
 clinical_note_writer_template = PromptTemplate(
     input_variables=["transcript", "input"],
     template=
