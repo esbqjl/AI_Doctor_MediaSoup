@@ -1,6 +1,6 @@
 # mediasoup-demo v3
 
-A alternated demo application of https://github.com/versatica/mediasoup-demo **v3**.
+This demo is an on going developing project based on the demo application of https://github.com/versatica/mediasoup-demo **v3**.
 Using real time transcribe and Artifical Intelligent to make a doctor assistance.
 
 ## Resources
