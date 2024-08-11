@@ -2,8 +2,8 @@ from flask import Flask, Response, request, jsonify, session
 from flask_socketio import SocketIO, emit
 from llm import patient_instructor
 from tasks import clinical_note_task, ddx_task, qa_task, hpi_task, run_tasks
-from state import state_store
-
+from state import state_store, initialize_state
+import threading
 import logging
 import os
 
@@ -37,12 +37,16 @@ def parse_text_to_array(text):
 @socketio.on('connect')
 def handle_connect():
     sid = request.sid
+    initialize_state(sid)
     print(f'Client connected with id: {sid }')
     emit('response', {'message': f'Connected to the server with id: {sid }'},to=sid )
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print('Client disconnected')
+    sid = request.sid
+    if sid in state_store:
+        del state_store[sid]
+    print(f'Client disconnected with id: {sid}')
 
 
 @socketio.on('transcript')
@@ -102,13 +106,12 @@ def start_socketio_server():
     socketio.run(app, host='0.0.0.0', port=5000, debug=False)
 
 def transcript_callback(text, sid):
-    global state_store
-    print("[main] transcript callback. patient_mode:{}, patient_recording:{}".
-          format(state_store["patient_mode"],
-                 state_store["patient_recording"]))
+    print(f"[main] transcript callback for SID: {sid}, patient_mode: {state_store[sid]['patient_mode']}, patient_recording: {state_store[sid]['patient_recording']}")
     
-    state_store["transcript"] += text + "\n"
+    state_store[sid]["transcript"] += text + "\n"
+    
+    # Directly run the tasks without threading
     qa_task.callback = lambda output: send_cds_qa_callback(output, sid)
     ddx_task.callback = lambda output: send_cds_ddx_callback(output, sid)
     hpi_task.callback = lambda output: send_cds_hpi_callback(output, sid)
-    _ = run_tasks(tasks=[qa_task, ddx_task, hpi_task], inputs={"transcript": state_store["transcript"]})
+    _ = run_tasks(tasks=[qa_task, ddx_task, hpi_task], inputs={"transcript": state_store[sid]["transcript"]})

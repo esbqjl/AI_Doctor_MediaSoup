@@ -7,10 +7,13 @@ memory.chat_memory.add_ai_message(
 
 memory.chat_memory.add_user_message
 
-state_store = {
-    "transcript": "",
-    "doctor_summary": "",
-    "patient_instruction_memory": memory,
-    "patient_mode": False,
-    "patient_recording": False
-}
+state_store = {}
+
+def initialize_state(sid):
+    state_store[sid] = {
+        "transcript": "",
+        "doctor_summary": "",
+        "patient_instruction_memory": memory,
+        "patient_mode": False,
+        "patient_recording": False
+    }

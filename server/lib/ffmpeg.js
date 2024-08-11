@@ -147,7 +147,7 @@ module.exports = class FFmpeg extends EventEmitter{
 
   get _audioArgs() {
     return [
-      '-ss', '1',
+      '-ss', '3',
       '-map', '0:a:0',
       '-c:a', 'pcm_s16le',
       '-ar', '16000',
