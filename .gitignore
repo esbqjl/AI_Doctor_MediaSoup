@@ -8,4 +8,4 @@ node_modules/
 .env
 /.vscode/
 Google.json
-/server/lib/audio
+
