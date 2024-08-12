@@ -53,6 +53,9 @@ def handle_disconnect():
 def handle_transcript(data):
     room_id = data.get('roomId')
     transcription = data.get('transcription')
+
+    if len(transcription)<=1:
+        return False
     print(f'Received transcription for room {room_id}: {transcription}')
     sid = request.sid
 
@@ -115,4 +118,3 @@ def transcript_callback(text, sid):
     ddx_task.callback = lambda output: send_cds_ddx_callback(output, sid)
     hpi_task.callback = lambda output: send_cds_hpi_callback(output, sid)
     _ = run_tasks(tasks=[qa_task, ddx_task, hpi_task], inputs={"transcript": state_store[sid]["transcript"]})
-    time.sleep(2)

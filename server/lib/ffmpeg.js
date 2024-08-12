@@ -123,6 +123,7 @@ module.exports = class FFmpeg extends EventEmitter{
     t=0 0
     m=audio ${audio.audioPort} RTP/AVP ${audioCodecInfo.payloadType}
     a=rtpmap:${audioCodecInfo.payloadType} ${audioCodecInfo.codecName}/${audioCodecInfo.clockRate}/${audioCodecInfo.channels}
+    ac=${audioCodecInfo.channels}
     a=sendonly
     `;
   }
