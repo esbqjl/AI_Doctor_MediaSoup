@@ -263,15 +263,15 @@ class Room extends EventEmitter
 		global.recordingStatus[this._roomId] = true;
 	  
 		await new Promise(resolve => setTimeout(resolve, 1000));
-	  
+		
 		try {
 			// 创建 plain transport 用于音频
 			const audioTransport = await this._mediasoupRouter.createPlainTransport({
-				listenIp: { ip: '192.168.50.175' },
+				listenIp: { ip: process.env.MEDIASOUP_LISTEN_IP },
 				rtcpMux: false,
 			});
 		
-			const remoteAudioIp = '192.168.50.175';
+			const remoteAudioIp = process.env.MEDIASOUP_LISTEN_IP;
 		
 			// allocate port for ffmpeg
 			let audioPort, rtcpPort;
