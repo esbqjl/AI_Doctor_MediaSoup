@@ -6,7 +6,7 @@ from state import state_store, initialize_state
 import threading
 import logging
 import os
-
+import time
 import re
 
 
@@ -115,3 +115,4 @@ def transcript_callback(text, sid):
     ddx_task.callback = lambda output: send_cds_ddx_callback(output, sid)
     hpi_task.callback = lambda output: send_cds_hpi_callback(output, sid)
     _ = run_tasks(tasks=[qa_task, ddx_task, hpi_task], inputs={"transcript": state_store[sid]["transcript"]})
+    time.sleep(2)
