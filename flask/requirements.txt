@@ -11,13 +11,10 @@ python-socketio
 gtts
 pygame
 whisper
-SpeechRecognition
 google.cloud
 flask
 setuptools
 pyaudio
 opencv-python
-pymongo
-Flask-Bcrypt
-Flask-Cors
-flask-jwt-extended
+flask_socketio
+

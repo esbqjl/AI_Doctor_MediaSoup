@@ -3,10 +3,8 @@ from flask_socketio import SocketIO, emit
 from llm import patient_instructor
 from tasks import clinical_note_task, ddx_task, qa_task, hpi_task, run_tasks
 from state import state_store, initialize_state
-import threading
 import logging
 import os
-import time
 import re
 
 
