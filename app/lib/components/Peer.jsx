@@ -87,7 +87,7 @@ const Peer = (props) =>
 					roomClient.requestConsumerKeyFrame(videoConsumer.id);
 				}}
 				onStatsClick={onSetStatsPeerId}
-				onTranscriptsClick={onSetStatsPeerId}
+				onAiClick={onSetStatsPeerId}
 			/>
 		</div>
 

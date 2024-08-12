@@ -13,8 +13,9 @@ const logger = new Logger('Room');
 const net = require('net');
 const usedPorts = new Set();
 const FFmpeg= require('./ffmpeg');
+const io = require('socket.io-client');
+
 global.recordingStatus = {};
-global.recordingStatus[this._roomId]
 /**
  * Room class.
  *
@@ -160,8 +161,46 @@ class Room extends EventEmitter
 		global.activeSpeakerObserver = this._activeSpeakerObserver;
 		global.bot = this._bot;
 
+		// socket connect
+		this._socket = io('http://localhost:5000');
+		this._socket.on('connect', () => {
+			console.log('Connected to Flask-SocketIO server');
+		  
+			// For debugging
+			this._socket.emit('transcript', {
+			  roomId: this.roomId,
+			  transcription: 'This is a test transcription.'
+			});
+		});
 
-		// recording
+		// stored data
+		this._cdsQaData = null;
+		this._cdsHpiData = null;
+		this._cdsDdxData = null;
+
+
+		// Handle connection errors
+		this._socket.on('connect_error', (error) => {
+			console.error('Connection error:', error);
+		});
+		
+		// Handle connection timeout
+		this._socket.on('connect_timeout', () => {
+			console.error('Connection timed out.');
+		});
+
+		// 实时接收数据并调用 handleSocketData 处理
+		this._socket.on('cds_ddx', (data) => {
+			this.handleSocketData('cds_ddx', data);
+		});
+	  
+		this._socket.on('cds_qa', (data) => {
+			this.handleSocketData('cds_qa', data);
+		});
+	  
+		this._socket.on('cds_hpi', (data) => {
+			this.handleSocketData('cds_hpi', data);
+		});
 
 		
 	}
@@ -177,8 +216,11 @@ class Room extends EventEmitter
 
 		// stop recording
 
-		
 		this.stopRecording();
+
+		// socketid disconnect
+
+		this._socket.disconnect();
 
 		// Close the protoo Room.
 		this._protooRoom.close();
@@ -276,15 +318,22 @@ class Room extends EventEmitter
 			const rtpConsumer = await audioTransport.consume({
 				producerId: audioProducer.id,
 				rtpCapabilities,
-				paused: false
+				paused: true
 			});
 	  
 			const rtpParameters = rtpConsumer.rtpParameters;
 		  	recordInfo['audio'] = { audioPort, rtcpPort, rtpCapabilities, rtpParameters};
+			logger.debug("audioTransport.rtcpTuple.localIp", audioTransport.rtcpTuple.localIp);
 			const roomId = this._roomId;
-		  	this._recordingProcess = new FFmpeg(recordInfo, roomId);
+		  	this._recordingProcess = new FFmpeg(recordInfo, roomId, audioTransport.rtcpTuple.localIp);
+			  	this._recordingProcess.on('transcript', async ({ roomId, transcription }) => {
+				this._socket.emit('transcript', {
+					roomId: roomId,
+					transcription: transcription 
+				});
+			});
 		  	this._recording = true;
-	  
+			rtpConsumer.resume();
 		  	console.log(`Recording started for room ${this._roomId}`);
 		} catch (error) {
 		  	console.error('Failed to start recording:', error);
@@ -429,6 +478,7 @@ class Room extends EventEmitter
 				this.close();
 			}
 		});
+		
 	}
 
 	getRouterRtpCapabilities()
@@ -1010,6 +1060,7 @@ class Room extends EventEmitter
 
 				break;
 			}
+
 
 			case 'join':
 			{
@@ -1688,6 +1739,45 @@ class Room extends EventEmitter
 				break;
 			}
 
+			case 'getCdsQa':
+			{
+				// check if cdsQaData is null or not
+				if (!this._cdsQaData) {
+					throw new Error(`No cds_qa data available`);
+				}
+
+				// we send the data back to the client
+				accept(this._cdsQaData);
+
+				break;
+			}
+
+			case 'getCdsDdx':
+			{
+				// check if cdsQaData is null or not
+				if (!this._cdsDdxData) {
+					throw new Error(`No cds_qa data available`);
+				}
+
+				// we send the data back to the client
+				accept(this._cdsDdxData);
+
+				break;
+			}
+
+			case 'getCdsHpi':
+			{
+				// check if cdsQaData is null or not
+				if (!this._cdsHpiData) {
+					throw new Error(`No cds_qa data available`);
+				}
+
+				// we send the data back to the client
+				accept(this._cdsHpiData);
+
+				break;
+			}
+
 			case 'getConsumerStats':
 			{
 				const { consumerId } = request.data;
@@ -2141,6 +2231,44 @@ class Room extends EventEmitter
 			}
 		}
   	}
+	// we can process data here
+	async handleSocketData(eventType, data) {
+		switch (eventType) {
+		  case 'cds_ddx':
+			this.processDdxData(data);
+			break;
+		  case 'cds_qa':
+			this.processQaData(data);
+			break;
+		  case 'cds_hpi':
+			this.processHpiData(data);
+			break;
+		  default:
+			console.warn(`Unknown event type: ${eventType}`);
+			break;
+		}
+	}
+	
+	// Process Data and send this to Frontend
+	processDdxData(data) {
+		console.log('Processing DDX data:', data);
+		this._cdsDdxData = data;
+		
+	}
+
+	
+	processQaData(data) {
+		console.log('Processing QA data:', data);
+		this._cdsQaData = data;
+	
+	}
+
+	
+	processHpiData(data) {
+		console.log('Processing HPI data:', data);
+		this._cdsHpiData = data;
+	}
+	
 }
 
 

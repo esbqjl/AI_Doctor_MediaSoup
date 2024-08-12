@@ -2069,6 +2069,19 @@ export default class RoomClient
 			'getTransportStats', { transportId: this._sendTransport.id });
 	}
 
+	// adding AI things in following
+
+	async getCdsQa()
+	{
+		console.log('getCdsQa()');
+
+		if (!this._micProducer)
+			return;
+
+		return this._protoo.request(
+			'getCdsQa', { producerId: this._micProducer.id });
+	}
+
 	async getRecvTransportRemoteStats()
 	{
 		logger.debug('getRecvTransportRemoteStats()');

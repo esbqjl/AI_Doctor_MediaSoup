@@ -84,7 +84,7 @@ export default class PeerView extends React.Component
 			onChangeVideoPriority,
 			onRequestKeyFrame,
 			onStatsClick,
-			onTranscriptsClick
+			onAiClick 
 		} = this.props;
 
 		const {
@@ -114,7 +114,7 @@ export default class PeerView extends React.Component
 						<If condition={!isMe}>
 							<div
 								className={classnames('icon', 'transcripts')}
-								onClick={() => onTranscriptsClick(peer.id)}
+								onClick={() => onAiClick(peer.id)}
 							/>
 						</If>
 
@@ -800,5 +800,5 @@ PeerView.propTypes =
 	onChangeVideoPriority          : PropTypes.func,
 	onRequestKeyFrame              : PropTypes.func,
 	onStatsClick                   : PropTypes.func.isRequired,
-	onTranscriptsClick             : PropTypes.func.isRequired
+	onAiClick                      : PropTypes.func.isRequired
 };

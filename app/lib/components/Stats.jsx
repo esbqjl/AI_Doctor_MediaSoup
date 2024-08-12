@@ -62,10 +62,11 @@ class Stats extends React.Component
 			chatDataConsumerRemoteStats,
 			botDataConsumerRemoteStats
 		} = this.state;
-
+		console.log("Dubug sendTransportRemoteStats", sendTransportRemoteStats);
 		return (
 			<div data-component='Stats'>
-				<div className={classnames('content', { visible: peerId })}>
+		     {/*<div className={classnames('content', { visible: peerId })}>*/}
+				<div className={classnames('content', { visible: false })}>
 					<div className='header'>
 						<div className='info'>
 							<div
