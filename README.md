@@ -63,6 +63,11 @@ $ npm install
 ```bash
 $ cp config.example.js config.js
 ```
+* Download ffmpeg on your machine, if you are using Linux
+
+```bash
+$ sudo apt install ffmpeg
+```
 
 * Make sure you have downloaded the Google speech to text credential json file, and place it under /server/lib
 * Copy `.env_example` as `.env` and customize it for your scenario, you don't need that OPENAI_KEY, but I put here just in case guys have api or something.
