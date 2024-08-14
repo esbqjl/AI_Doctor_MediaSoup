@@ -138,7 +138,7 @@ $ python main.py
 $ cd app
 $ npm start
 ```
-
+For this project, I am giving some certs example under /server/certs dir. you can use this, or change into your ssl.
 If you configured a self-signed tls certificate, and receive wss: connection errors, open the wss: url with https: protocol to accept the cert and allow wss: connections in your browser.
 
 * Enjoy.
