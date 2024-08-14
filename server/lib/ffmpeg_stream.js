@@ -1,78 +1,104 @@
 const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
-const { EventEmitter } = require('events');
-const { getCodecInfoFromRtpParameters } = require('./utils');
-const { PassThrough } = require('stream'); // 使用 PassThrough 流
+const { getCodecInfoFromRtpParameters, convertStringToStream } = require('./utils');
 const RECORD_FILE_LOCATION_PATH = 'audio';
-
 const Logger = require('./Logger');
 const logger = new Logger('sdp');
 const speech = require('@google-cloud/speech');
+const EventEmitter = require('events').EventEmitter;
 const client = new speech.SpeechClient({
   keyFilename: path.join(__dirname, 'Google.json')
 });
 
-module.exports = class FFmpeg {
-  constructor(rtpParameters, roomId) {
+module.exports = class FFmpeg extends EventEmitter {
+  constructor(rtpParameters, roomId, listenIp) {
+    super();
     this._rtpParameters = rtpParameters;
     this._process = undefined;
-    this._observer = new EventEmitter();
-    this._audioStream = new PassThrough(); // 使用 PassThrough 代替 buffer
     this._roomId = roomId;
-    this._sdpFilePath = null;
+    this._listenIp = listenIp;
     this._createProcess();
   }
 
   _createProcess() {
     const sdpContent = this._createSdpText(this._rtpParameters);
-    this._sdpFilePath = path.join(__dirname, '/audio/', `${this._roomId}.sdp`);
-    fs.writeFileSync(this._sdpFilePath, sdpContent);
+    const sdpStream = convertStringToStream(sdpContent);
+
+    logger.debug('SDP content:', sdpContent);
     this._process = child_process.spawn('ffmpeg', this._commandArgs);
 
     if (this._process.stderr) {
       this._process.stderr.setEncoding('utf-8');
-      this._process.stderr.on('data', data => console.log('ffmpeg::process::data [data:%o]', data));
+      this._process.stderr.on('data', data => logger.debug('ffmpeg::process::data [data:%o]', data));
     }
 
     if (this._process.stdout) {
-      // 将 ffmpeg 的输出连接到 audioStream
-      this._process.stdout.pipe(this._audioStream);
+      // Stream the stdout (audio data) to Google Cloud Speech
+      this._startStreamingRecognition(this._process.stdout);
     }
 
-    this._process.on('error', error => console.error('ffmpeg::process::error [error:%o]', error));
+    this._process.on('error', error => logger.error('ffmpeg::process::error [error:%o]', error));
     this._process.once('close', () => {
-      console.log('ffmpeg::process::close');
-      this._observer.emit('process-close');
+      logger.debug('ffmpeg::process::close');
+      this._stopStreamingRecognition();
     });
 
-    this._startRecognitionStream();
+    // Pipe the SDP stream directly to FFmpeg's stdin
+    sdpStream.pipe(this._process.stdin);
   }
 
-  _startRecognitionStream() {
-    const recognizeStream = client
-      .streamingRecognize({
-        config: {
-          encoding: 'LINEAR16',
-          sampleRateHertz: 16000,
-          languageCode: 'en-US',
-        },
-        interimResults: false, // 设置为 false 以获取完整的结果
-      })
-      .on('error', error => console.error('Error in recognition stream:', error))
-      .on('data', data => {
-        if (data.results && data.results[0] && data.results[0].alternatives[0]) {
-          const transcription = data.results[0].alternatives[0].transcript;
-          console.log(`Room ${this._roomId} Transcription: ${transcription}`);
-          fs.appendFileSync(path.join(__dirname, '/audio/', `${this._roomId}.txt`), transcription);
-          this._observer.emit('transcription', transcription);
-        } else {
-          console.log(`Room ${this._roomId} No transcription results received.`);
-        }
+  _startStreamingRecognition(audioStream) {
+    const request = {
+      config: {
+        encoding: 'OGG_OPUS',
+        sampleRateHertz: 48000,
+        languageCode: 'en-US',
+        audioChannelCount: 2,
+        interimResults: true, // If you want interim results, set this to true
+      },
+    };
+
+    this._recognizeStream = client
+      .streamingRecognize(request)
+      .on('error', (error) => logger.error(`Room ${this._roomId} Error recognizing audio:`, error))
+      .on('data', (response) => {
+        logger.debug('Received response:', response);
+        this._onTranscription(response);
       });
 
-    // 将 audioStream 的数据传输到 Google Speech-to-Text API
-    this._audioStream.pipe(recognizeStream);
+    // Manually handle audio stream data and push it to Google Cloud Speech-to-Text
+    audioStream.on('data', (chunk) => {
+      this._recognizeStream.write(chunk);
+    });
+
+    audioStream.on('end', () => {
+      this._recognizeStream.end();
+    });
+  }
+
+  _stopStreamingRecognition() {
+    if (this._recognizeStream) {
+      this._recognizeStream.end();
+    }
+  }
+
+  _onTranscription(response) {
+    if (response.results && response.results.length > 0) {
+      const transcription = response.results
+        .map(result => result.alternatives[0].transcript)
+        .join('\n');
+
+      logger.debug(`Room ${this._roomId} Transcription: ${transcription}`);
+      this.emit('transcript', { roomId: this._roomId, transcription });
+      try {
+        fs.appendFileSync(path.join(__dirname, `/${RECORD_FILE_LOCATION_PATH}/`, `${this._roomId}.txt`), `${transcription}\n`);
+      } catch (err) {
+        logger.error('Error appending transcription data to file:', err);
+      }
+    } else {
+      logger.debug(`Room ${this._roomId} No transcription results received.`);
+    }
   }
 
   _createSdpText(rtpParameters) {
@@ -80,9 +106,9 @@ module.exports = class FFmpeg {
     const audioCodecInfo = getCodecInfoFromRtpParameters('audio', audio.rtpParameters);
 
     return `v=0
-    o=- 0 0 IN IP4 192.168.50.175
+    o=- 0 0 IN IP4 ${this._listenIp}
     s=FFmpeg
-    c=IN IP4 192.168.50.175
+    c=IN IP4 ${this._listenIp}
     t=0 0
     m=audio ${audio.audioPort} RTP/AVP ${audioCodecInfo.payloadType}
     a=rtpmap:${audioCodecInfo.payloadType} ${audioCodecInfo.codecName}/${audioCodecInfo.clockRate}/${audioCodecInfo.channels}
@@ -91,16 +117,17 @@ module.exports = class FFmpeg {
   }
 
   kill() {
-    console.log('kill() [pid:%d]', this._process.pid);
+    logger.debug('kill() [pid:%d]', this._process.pid);
     this._process.kill('SIGINT');
+    this._stopStreamingRecognition(); // Ensure streaming is stopped when FFmpeg process is killed
   }
 
   get _commandArgs() {
     let commandArgs = [
       '-loglevel', 'debug',
-      '-protocol_whitelist', 'file,crypto,data,udp,rtp',
+      '-protocol_whitelist', 'file,crypto,data,udp,rtp,pipe',
       '-f', 'sdp',
-      '-i', this._sdpFilePath,
+      '-i', 'pipe:0', // Read SDP from stdin
       '-listen_timeout', '15'
     ];
 
@@ -111,11 +138,9 @@ module.exports = class FFmpeg {
   get _audioArgs() {
     return [
       '-map', '0:a:0',
-      '-c:a', 'pcm_s16le',
-      '-ar', '16000',
-      '-ac', '1',
-      '-f', 'wav',
-      'pipe:1'
-    ];
+      '-c:a', 'copy',           // No re-encoding, just copy the stream
+      '-f', 'ogg',            // Output format
+      'pipe:1'                  // Output to stdout
+    ];  
   }
 };

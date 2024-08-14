@@ -39,7 +39,7 @@ class Ai extends React.Component
 
 		return (
 			<div data-component='Ai'>
-				<div className={classnames('content', { visible: peerId })}>
+				<div className={classnames('content', { visible: peerId})}>
 					<div className='header'>
 						<div className='info'>
 							<div
