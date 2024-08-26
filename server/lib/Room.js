@@ -1491,7 +1491,7 @@ class Room extends EventEmitter
 				if (!producer)
 					throw new Error(`producer with id "${producerId}" not found`);
 
-				await producer.pause();
+				// await producer.pause();
 
 				accept();
 

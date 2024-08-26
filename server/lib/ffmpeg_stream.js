@@ -11,6 +11,10 @@ const client = new speech.SpeechClient({
   keyFilename: path.join(__dirname, 'Google.json')
 });
 
+const silenceBuffer = Buffer.from([0xF8, 0xFF, 0xFE]); // Opus silence frame
+
+
+
 module.exports = class FFmpeg extends EventEmitter {
   constructor(rtpParameters, roomId, listenIp) {
     super();
@@ -55,7 +59,7 @@ module.exports = class FFmpeg extends EventEmitter {
         sampleRateHertz: 48000,
         languageCode: 'en-US',
         audioChannelCount: 2,
-        interimResults: true, // If you want interim results, set this to true
+        interimResults: true, // If you want interim results, set this to true 
       },
     };
 
@@ -65,21 +69,34 @@ module.exports = class FFmpeg extends EventEmitter {
       .on('data', (response) => {
         logger.debug('Received response:', response);
         this._onTranscription(response);
-      });
+    });
 
     // Manually handle audio stream data and push it to Google Cloud Speech-to-Text
-    audioStream.on('data', (chunk) => {
-      this._recognizeStream.write(chunk);
-    });
 
-    audioStream.on('end', () => {
-      this._recognizeStream.end();
+    
+    audioStream.on('data', (chunk) => {
+      if(this._recognizeStream)
+        {
+          this._recognizeStream.write(chunk);
+        }
     });
+    
+    
+    if(this._recognizeStream)
+    {
+      audioStream.on('end', () => {
+        if(this._recognizeStream)
+        {
+          this._recognizeStream.end();
+        }
+      });
+    }
   }
 
   _stopStreamingRecognition() {
     if (this._recognizeStream) {
       this._recognizeStream.end();
+      this._recognizeStream = null;
     }
   }
 
