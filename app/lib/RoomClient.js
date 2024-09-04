@@ -2082,6 +2082,28 @@ export default class RoomClient
 			'getCdsQa', { producerId: this._micProducer.id });
 	}
 
+	async getCdsHpi()
+	{
+		console.log('getCdsHpi()');
+
+		if (!this._micProducer)
+			return;
+
+		return this._protoo.request(
+			'getCdsHpi', { producerId: this._micProducer.id });
+	}
+
+	async getCdsDdx()
+	{
+		console.log('getCdsDdx()');
+
+		if (!this._micProducer)
+			return;
+
+		return this._protoo.request(
+			'getCdsDdx', { producerId: this._micProducer.id });
+	}
+
 	async getRecvTransportRemoteStats()
 	{
 		logger.debug('getRecvTransportRemoteStats()');

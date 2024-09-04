@@ -3,7 +3,7 @@ node_modules/
 /server/config.*
 !/server/config.example.js
 /server/public/
-/server/certs/
+
 /server/mediasoup_valgrind_*
 .env
 /.vscode/

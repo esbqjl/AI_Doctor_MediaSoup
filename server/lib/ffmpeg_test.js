@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
-const { getCodecInfoFromRtpParameters } = require('./utils');
+const { getCodecInfoFromRtpParameters, convertStringToStream } = require('./utils');
 const RECORD_FILE_LOCATION_PATH = 'audio';
 const axios = require('axios');
 const Logger = require('./Logger');
@@ -12,7 +12,7 @@ const client = new speech.SpeechClient({
   keyFilename: path.join(__dirname, 'Google.json')
 });
 
-module.exports = class FFmpeg extends EventEmitter{
+module.exports = class FFmpeg extends EventEmitter {
   constructor(rtpParameters, roomId, listenIp) {
     super();
     this._rtpParameters = rtpParameters;
@@ -22,71 +22,61 @@ module.exports = class FFmpeg extends EventEmitter{
     this._uploadInterval = null; // set certain time to upload audio
     this._roomId = roomId;
     this._listenIp = listenIp;
-    this._sdpFilePath = null;
     this._createProcess();
-   
   }
 
   _createProcess() {
-    const sdpContent = this._createSdpText(this._rtpParameters);
-    
-    this._sdpFilePath = path.join(__dirname, `/${RECORD_FILE_LOCATION_PATH}/`, `${this._roomId}.sdp`);
-    fs.writeFileSync(this._sdpFilePath, sdpContent);
-    console.log('SDP content written to file:', this._sdpFilePath);
-    this._process = child_process.spawn('ffmpeg', this._commandArgs);
+      const sdpContent = this._createSdpText(this._rtpParameters);
+      const sdpStream = convertStringToStream(sdpContent);
+      
+      console.log('SDP content:', sdpContent);
+      this._process = child_process.spawn('ffmpeg', this._commandArgs);
 
-    if (this._process.stderr) {
-      this._process.stderr.setEncoding('utf-8');
-      this._process.stderr.on('data', data => console.log('ffmpeg::process::data [data:%o]', data));
-    }
+      if (this._process.stderr) {
+        this._process.stderr.setEncoding('utf-8');
+        this._process.stderr.on('data', data => console.log('ffmpeg::process::data [data:%o]', data));
+      }
 
-    if (this._process.stdout) {
-      this._process.stdout.on('data', data => this._onData(data));
-    }
+      if (this._process.stdout) {
+        this._process.stdout.on('data', data => this._onData(data));
+      }
 
-    this._process.on('error', error => console.error('ffmpeg::process::error [error:%o]', error));
-    this._process.once('close', () => {
-      console.log('ffmpeg::process::close');
-      clearInterval(this._uploadInterval); // stop certain time upload task
-    });
+      this._process.on('error', error => console.error('ffmpeg::process::error [error:%o]', error));
+      this._process.once('close', () => {
+        console.log('ffmpeg::process::close');
+      });
 
-    this._startUploadInterval(); // click off certian time upload task
+      // Pipe the SDP stream directly to FFmpeg's stdin
+      sdpStream.pipe(this._process.stdin);
   }
 
   _onData(data) {
-    // make sure data is contained in Buffer
-    if (Buffer.isBuffer(data)) {
-      this._audioBuffer.push(data);
-    } else {
-      this._audioBuffer.push(Buffer.from(data));
-    }
+    // 直接上传音频数据而不是保存到 buffer
+    this._uploadAudio(data);
   }
 
   _startUploadInterval() {
     this._uploadInterval = setInterval(() => this._uploadAudio(), 9000); // upload this in every certain seconds
   }
 
-  async _uploadAudio() {
-    if (this._audioBuffer.length === 0) return;
-
-    // 使用 Buffer.concat 来组合所有音频数据块
-    const audioData = Buffer.concat(this._audioBuffer);
+  async _uploadAudio(audioData) {
+    // 直接使用 audioData 而不保存到 buffer
     const { audio } = this._rtpParameters;
     
     try {
-      fs.appendFileSync(path.join(__dirname, `/${RECORD_FILE_LOCATION_PATH}/`,`${this._roomId}.wav`), audioData);
-      console.log('Audio data appended to audio_test.wav for verification.');
+      logger.debug("audioData", audioData);
+      fs.appendFileSync(path.join(__dirname, `/${RECORD_FILE_LOCATION_PATH}/`,`${this._roomId}.webm`), audioData);
+      console.log('Audio data appended to audio_test.ogg for verification.');
     } catch (err) {
       console.error('Error appending audio data to file:', err);
     }
-    
-    this._audioBuffer = []; // cleanup that buffer
 
     const request = {
       config: {
-        encoding: 'LINEAR16',
-        sampleRateHertz: 16000,
+        encoding: 'WEBM_OPUS',
+        sampleRateHertz: 48000,
         languageCode: 'en-US',
+        audioChannelCount: 2
       },
       audio: {
         content: audioData.toString('base64'),
@@ -123,7 +113,6 @@ module.exports = class FFmpeg extends EventEmitter{
     t=0 0
     m=audio ${audio.audioPort} RTP/AVP ${audioCodecInfo.payloadType}
     a=rtpmap:${audioCodecInfo.payloadType} ${audioCodecInfo.codecName}/${audioCodecInfo.clockRate}/${audioCodecInfo.channels}
-    ac=${audioCodecInfo.channels}
     a=sendonly
     `;
   }
@@ -137,9 +126,9 @@ module.exports = class FFmpeg extends EventEmitter{
     let commandArgs = [
       '-loglevel', 'debug',
       '-async', '1',
-      '-protocol_whitelist', 'file,crypto,data,udp,rtp',
+      '-protocol_whitelist', 'file,crypto,data,udp,rtp,pipe',
       '-f', 'sdp',
-      '-i', this._sdpFilePath,
+      '-i', 'pipe:0', // Read SDP from stdin
       '-listen_timeout', '15'
     ];
 
@@ -150,10 +139,8 @@ module.exports = class FFmpeg extends EventEmitter{
   get _audioArgs() {
     return [
       '-map', '0:a:0',
-      '-c:a', 'pcm_s16le',
-      '-ar', '16000',
-      '-ac', '1',
-      '-f', 'wav',
+      '-c:a', 'copy',
+      '-f', 'webm',
       'pipe:1'
     ];
   }

@@ -12,7 +12,8 @@ const logger = new Logger('Room');
 // const path = require('path');
 const net = require('net');
 const usedPorts = new Set();
-const FFmpeg= require('./ffmpeg');
+// const FFmpeg= require('./ffmpeg');
+const FFmpeg= require('./ffmpeg_stream');
 const io = require('socket.io-client');
 
 global.recordingStatus = {};
@@ -318,7 +319,7 @@ class Room extends EventEmitter
 			const rtpConsumer = await audioTransport.consume({
 				producerId: audioProducer.id,
 				rtpCapabilities,
-				paused: true
+				paused: false
 			});
 	  
 			const rtpParameters = rtpConsumer.rtpParameters;
@@ -333,7 +334,6 @@ class Room extends EventEmitter
 				});
 			});
 		  	this._recording = true;
-			rtpConsumer.resume();
 		  	console.log(`Recording started for room ${this._roomId}`);
 		} catch (error) {
 		  	console.error('Failed to start recording:', error);
@@ -1491,7 +1491,7 @@ class Room extends EventEmitter
 				if (!producer)
 					throw new Error(`producer with id "${producerId}" not found`);
 
-				await producer.pause();
+				// await producer.pause();
 
 				accept();
 

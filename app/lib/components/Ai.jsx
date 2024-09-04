@@ -14,7 +14,9 @@ class Ai extends React.Component
 
 		this.state =
 		{
-			cdsQaData                   : null,
+			cdsQaData                    : null,
+            cdsDdxData                   : null,
+            cdsHpiData                   : null,
 		};
 
 		this._delayTimer = null;
@@ -31,11 +33,13 @@ class Ai extends React.Component
 
 		const {
             cdsQaData,
+            cdsHpiData,
+            cdsDdxData
 		} = this.state;
 
 		return (
 			<div data-component='Ai'>
-				<div className={classnames('content', { visible: peerId })}>
+				<div className={classnames('content', { visible: peerId})}>
 					<div className='header'>
 						<div className='info'>
 							<div
@@ -69,8 +73,17 @@ class Ai extends React.Component
 
 					<div className='stats'>
 						<If condition={cdsQaData}>
-							{this._printAi('Suggested Question by Medpal', cdsQaData)}
+							{this._printQa('Suggested Question by Medpal', cdsQaData)}
 						</If>
+
+                        <If condition={cdsDdxData}>
+							{this._printDdx('Possible Causes', cdsDdxData)}
+						</If>
+
+                        <If condition={cdsHpiData}>
+							{this._printHpi('Medical Keywords', cdsHpiData)}
+						</If>
+
 					</div>
 				</div>
 			</div>
@@ -108,11 +121,19 @@ class Ai extends React.Component
 		} = this.props;
 
 		let cdsQaData                = null;
+        let cdsDdxData                = null;
+        let cdsHpiData                = null;
 
 		if (isMe)
 		{
 			cdsQaData = await roomClient.getCdsQa()
                 .catch(() => {});
+
+            cdsDdxData = await roomClient.getCdsDdx()
+            .catch(() => {});
+
+            cdsHpiData = await roomClient.getCdsHpi()
+            .catch(() => {});
 		}
 		else
 		{
@@ -121,11 +142,24 @@ class Ai extends React.Component
                 .catch(() => {});
 
             console.log(cdsQaData);
+
+            cdsDdxData = await roomClient.getCdsDdx()
+                .catch(() => {});
+
+            console.log(cdsDdxData);
+
+            cdsHpiData = await roomClient.getCdsHpi()
+                .catch(() => {});
+
+            console.log(cdsHpiData);
 		}
 
 		this.setState(
 			{
-				cdsQaData
+				cdsQaData,
+                cdsDdxData,
+                cdsHpiData,
+                
 			});
 
 		this._delayTimer = setTimeout(() => this._start(), 2500);
@@ -137,7 +171,9 @@ class Ai extends React.Component
 
 		this.setState(
 			{
-				cdsQaData                   : null
+				cdsQaData                   : null,
+                cdsDdxData                  : null,
+                cdsHpiData                  : null,
 			});
 	}
 
@@ -183,7 +219,7 @@ class Ai extends React.Component
 		);
 	}
 
-    _printAi(title, content)
+    _printQa(title, content)
     {
         const anchor = title.replace(/[ ]+/g, '-');
 
@@ -196,6 +232,62 @@ class Ai extends React.Component
             </Appear>
         );
     }
+
+	_printDdx(title, content)
+	{
+		const anchor = title.replace(/[ ]+/g, '-');
+
+		return (
+			<Appear duration={150}>
+				<div className='items'>
+					<h2 id={anchor}>{title}</h2>
+					<div className="flex flex-col mx-4">
+						{content && typeof content === 'object' && !Array.isArray(content) ? (
+							Object.entries(content).map(([key, value], index) => (
+								<div key={index} className="bg-pink-300 rounded-lg mt-2 p-2">
+									<strong>{key}</strong>: {value}
+								</div>
+							))
+						) : (
+							<p className="bg-red-300 rounded-lg mt-2">No data available</p>
+						)}
+					</div>
+				</div>
+			</Appear>
+		);
+	}
+
+	_printHpi(title, content)
+	{
+		const anchor = title.replace(/[ ]+/g, '-');
+
+		const contentArray = Array.isArray(content) ? content : [content];
+
+		return (
+			<Appear duration={150}>
+				<div className='items'>
+					<h2 id={anchor}>{title}</h2>
+					{
+						contentArray.map((item, idx) => (
+							<div className='item' key={idx}>
+								{
+									Array.isArray(item) ? 
+									item.map((subItem, subIdx) => (
+										typeof subItem === 'object' && subItem !== null
+											? <pre key={subIdx}>{JSON.stringify(subItem, null, 2)}</pre>
+											: <p key={subIdx}>{subItem}</p>
+									)) :
+									typeof item === 'object' && item !== null
+										? <pre>{JSON.stringify(item, null, 2)}</pre>
+										: <p>{item}</p>
+								}
+							</div>
+						))
+					}
+				</div>
+			</Appear>
+		);
+	}
 
 }
 
@@ -281,6 +373,8 @@ const mapDispatchToProps = (dispatch) =>
 		onClose : () => dispatch(stateActions.setRoomStatsPeerId(null))
 	};
 };
+
+
 
 const StatsContainer = withRoomContext(connect(
 	mapStateToProps,
