@@ -93,6 +93,11 @@ def send_cds_ddx_callback(output, sid):
     parsed_data = parse_text_to_dict(output.raw_output)
     socketio.emit('cds_ddx', parsed_data, to=sid)
 
+def send_transcript(output,sid):
+    print(f"==>Transcript: {output}")
+    socketio.emit('send_transcript', output, to=sid)
+
+
 def send_cds_qa_callback(output, sid):
     print(f"==> qa_task.output: {output.raw_output}")
     socketio.emit('cds_qa', output.raw_output, to=sid)
@@ -116,3 +121,4 @@ def transcript_callback(text, sid):
     ddx_task.callback = lambda output: send_cds_ddx_callback(output, sid)
     hpi_task.callback = lambda output: send_cds_hpi_callback(output, sid)
     _ = run_tasks(tasks=[qa_task, ddx_task, hpi_task], inputs={"transcript": state_store[sid]["transcript"]})
+    send_transcript(state_store[sid]["transcript"],sid)

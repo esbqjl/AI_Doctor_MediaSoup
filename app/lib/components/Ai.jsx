@@ -17,6 +17,7 @@ class Ai extends React.Component
 			cdsQaData                    : null,
             cdsDdxData                   : null,
             cdsHpiData                   : null,
+			transcript                   : null,
 		};
 
 		this._delayTimer = null;
@@ -34,7 +35,8 @@ class Ai extends React.Component
 		const {
             cdsQaData,
             cdsHpiData,
-            cdsDdxData
+            cdsDdxData,
+			transcript
 		} = this.state;
 
 		return (
@@ -59,7 +61,7 @@ class Ai extends React.Component
 						</div>
 
 						<div className='list'>
-							<If condition={cdsQaData}>
+							<If condition={transcript}>
 								<p>
 									{'Transcript: '}
 									<a href='#Transcript'>[transcript]</a>
@@ -73,7 +75,11 @@ class Ai extends React.Component
 
 					<div className='stats'>
 						<If condition={cdsQaData}>
-							{this._printQa('Suggested Question by Medpal', cdsQaData)}
+							{this._printPlainText('Suggested Question by Medpal', cdsQaData)}
+						</If>
+
+						<If condition={transcript}>
+							{this._printPlainText('Conversation', transcript)}
 						</If>
 
                         <If condition={cdsDdxData}>
@@ -123,25 +129,34 @@ class Ai extends React.Component
 		let cdsQaData                = null;
         let cdsDdxData                = null;
         let cdsHpiData                = null;
+		let transcript                = null;
 
 		if (isMe)
 		{
 			cdsQaData = await roomClient.getCdsQa()
                 .catch(() => {});
+			
+			transcript = await roomClient.getTranscript()
+				.catch(() => {});
 
             cdsDdxData = await roomClient.getCdsDdx()
-            .catch(() => {});
+            	.catch(() => {});
 
             cdsHpiData = await roomClient.getCdsHpi()
-            .catch(() => {});
+            	.catch(() => {});
 		}
 		else
 		{
 			
             cdsQaData = await roomClient.getCdsQa()
                 .catch(() => {});
+			
+			console.log(cdsQaData);
+			
+			transcript = await roomClient.getTranscript()
+				.catch(() => {});
 
-            console.log(cdsQaData);
+            console.log(transcript);
 
             cdsDdxData = await roomClient.getCdsDdx()
                 .catch(() => {});
@@ -159,6 +174,7 @@ class Ai extends React.Component
 				cdsQaData,
                 cdsDdxData,
                 cdsHpiData,
+				transcript,
                 
 			});
 
@@ -174,6 +190,7 @@ class Ai extends React.Component
 				cdsQaData                   : null,
                 cdsDdxData                  : null,
                 cdsHpiData                  : null,
+				transcript                  : null,
 			});
 	}
 
@@ -219,7 +236,7 @@ class Ai extends React.Component
 		);
 	}
 
-    _printQa(title, content)
+    _printPlainText(title, content)
     {
         const anchor = title.replace(/[ ]+/g, '-');
 

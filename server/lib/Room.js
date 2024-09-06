@@ -176,6 +176,7 @@ class Room extends EventEmitter
 
 		// stored data
 		this._cdsQaData = null;
+		this._transcript = null;
 		this._cdsHpiData = null;
 		this._cdsDdxData = null;
 
@@ -201,6 +202,10 @@ class Room extends EventEmitter
 	  
 		this._socket.on('cds_hpi', (data) => {
 			this.handleSocketData('cds_hpi', data);
+		});
+
+		this._socket.on('send_transcript', (data) => {
+			this.handleSocketData('transcript', data);
 		});
 
 		
@@ -1778,6 +1783,19 @@ class Room extends EventEmitter
 				break;
 			}
 
+			case 'getTranscript':
+			{
+				// check if transcript is null or not
+				if (!this._cdsHpiData) {
+					throw new Error(`No transcript available`);
+				}
+
+				// we send the data back to the client
+				accept(this._transcript);
+
+				break;
+			}
+
 			case 'getConsumerStats':
 			{
 				const { consumerId } = request.data;
@@ -2243,6 +2261,9 @@ class Room extends EventEmitter
 		  case 'cds_hpi':
 			this.processHpiData(data);
 			break;
+		  case 'transcript':
+			this.processTranscript(data);
+			break;
 		  default:
 			console.warn(`Unknown event type: ${eventType}`);
 			break;
@@ -2267,6 +2288,11 @@ class Room extends EventEmitter
 	processHpiData(data) {
 		console.log('Processing HPI data:', data);
 		this._cdsHpiData = data;
+	}
+
+	processTranscript(data) {
+		console.log('Processing Transcript', data);
+		this._transcript = data;
 	}
 	
 }
