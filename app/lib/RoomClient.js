@@ -2082,6 +2082,17 @@ export default class RoomClient
 			'getCdsQa', { producerId: this._micProducer.id });
 	}
 
+	async getTranscript()
+	{
+		console.log('getTranscript()');
+
+		if (!this._micProducer)
+			return;
+
+		return this._protoo.request(
+			'getTranscript', { producerId: this._micProducer.id });
+	}
+
 	async getCdsHpi()
 	{
 		console.log('getCdsHpi()');
