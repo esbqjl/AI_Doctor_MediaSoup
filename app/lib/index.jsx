@@ -21,6 +21,13 @@ import * as cookiesManager from './cookiesManager';
 import * as stateActions from './redux/stateActions';
 import reducers from './redux/reducers';
 import Room from './components/Room';
+import NavBar from './components/NavBar';
+import TopBar from './components/TopBar';
+import DateDisplay from './components/DateDisplay';
+import DoctorSchedule from './components/DoctorSchedule';
+import ControlBar from './components/ControlBar';
+import Highlights from './components/Highlights';
+import HealthSummary from './components/HealthSummary';
 
 const logger = new Logger();
 const reduxMiddlewares = [ thunk ];
@@ -212,9 +219,19 @@ async function run()
 	window.CC = roomClient;
 
 	render(
+		
 		<Provider store={store}>
+			
 			<RoomContext.Provider value={roomClient}>
+			
+				<TopBar />
+				<NavBar />
+				<DateDisplay />
 				<Room />
+				<DoctorSchedule />
+				<ControlBar />
+				<Highlights />
+				<HealthSummary />
 			</RoomContext.Provider>
 		</Provider>,
 		document.getElementById('mediasoup-demo-app-container')

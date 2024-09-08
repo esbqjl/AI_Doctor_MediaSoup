@@ -15,7 +15,6 @@ import Stats from './Stats';
 import Ai from './Ai';
 import Notifications from './Notifications';
 import NetworkThrottle from './NetworkThrottle';
-
 class Room extends React.Component
 {
 	render()
