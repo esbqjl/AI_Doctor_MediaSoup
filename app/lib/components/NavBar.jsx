@@ -2,6 +2,7 @@ import React from 'react';
 
 const NavBar = () => {
   const navStyle = {
+    position: 'fixed',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

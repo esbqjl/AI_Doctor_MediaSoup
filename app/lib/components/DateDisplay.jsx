@@ -26,6 +26,17 @@ const DateDisplay = () => {
   const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
   const formattedHours = hours % 12 || 12;
 
+  const containerLayout = {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 1000,
+    width: '400px',
+    height: 'auto',
+    paddingRight: '10px',
+    paddingTop: '80px',
+  };
+
   const containerStyle = {
     display: 'flex',
     flexDirection: 'column',
@@ -67,21 +78,23 @@ const DateDisplay = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <span>{`${monthNames[month]} ${year}`}</span>
-        <span style={timeStyle}>{`${formattedHours}:${formattedMinutes} ${ampm}`}</span>
-      </div>
-      <div style={calendarStyle}>
-        {dayNames.map((name, index) => (
-          <div
-            key={index}
-            style={index === dayOfWeek ? activeDayStyle : undefined}
-          >
-            <div>{name}</div>
-            <div>{day - (dayOfWeek - index)}</div>
-          </div>
-        ))}
+    <div style={containerLayout}>
+      <div style={containerStyle}>
+        <div style={headerStyle}>
+          <span>{`${monthNames[month]} ${year}`}</span>
+          <span style={timeStyle}>{`${formattedHours}:${formattedMinutes} ${ampm}`}</span>
+        </div>
+        <div style={calendarStyle}>
+          {dayNames.map((name, index) => (
+            <div
+              key={index}
+              style={index === dayOfWeek ? activeDayStyle : undefined}
+            >
+              <div>{name}</div>
+              <div>{day - (dayOfWeek - index)}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

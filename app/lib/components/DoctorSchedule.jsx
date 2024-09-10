@@ -8,6 +8,18 @@ const fakeData = Array.from({ length: 52 }, () =>
 
 const DoctorSchedule = () => {
   
+
+
+
+  const containerLayout = {
+    position: 'absolute',    
+    bottom: 0,               
+    right: 450,                 
+    paddingBottom: '10px',  
+    paddingRight: '100px', 
+    width: '600px',
+  };
+
   const containerStyle = {
     padding: '20px',
     borderRadius: '12px',
@@ -15,6 +27,7 @@ const DoctorSchedule = () => {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     fontFamily: 'Arial, sans-serif',
     width: '100%',
+    overflow: 'auto',
   };
 
   const headerStyle = {
@@ -58,43 +71,45 @@ const DoctorSchedule = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <div>
-          <div style={titleStyle}>Doctor's Schedule</div>
-          <div style={subTitleStyle}>Doctor’s weekly consultation availability</div>
+    <div style={containerLayout}>
+      <div style={containerStyle}>
+        <div style={headerStyle}>
+          <div>
+            <div style={titleStyle}>Doctor's Schedule</div>
+            <div style={subTitleStyle}>Doctor’s weekly consultation availability</div>
+          </div>
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#0028f8',
+              fontSize: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            + Book a Session
+          </button>
         </div>
-        <button
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#0028f8',
-            fontSize: '12px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          + Book a Session
-        </button>
-      </div>
-      <div style={gridContainerStyle}>
+        <div style={gridContainerStyle}>
+          
+          <div style={{ gridColumn: 'span 1' }}>W</div>
+          {fakeData.map((week, index) => (
+            <React.Fragment key={index}>
+              {week.map((day, i) => (
+                <div key={i} style={cellStyle(day)}></div>
+              ))}
+            </React.Fragment>
+          ))}
+        </div>
         
-        <div style={{ gridColumn: 'span 1' }}>W</div>
-        {fakeData.map((week, index) => (
-          <React.Fragment key={index}>
-            {week.map((day, i) => (
-              <div key={i} style={cellStyle(day)}></div>
-            ))}
-          </React.Fragment>
-        ))}
-      </div>
-      
-      <div style={labelContainerStyle}>
+        <div style={labelContainerStyle}>
         <span>Jan</span>
         <span>May</span>
         <span>Oct</span>
       </div>
+    </div>
     </div>
   );
 };

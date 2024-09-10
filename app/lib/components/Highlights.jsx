@@ -22,6 +22,16 @@ const Highlights = () => {
   };
 
 
+  const containerLayout = {
+    position: 'absolute',               
+    right: 0,  
+    bottom:0,  
+    zIndex: 1000,             
+    paddingBottom: '30px',  
+    paddingRight: '10px', 
+    width: '400px',
+
+  }
   const containerStyle = {
     padding: '20px',
     borderRadius: '12px',
@@ -47,32 +57,34 @@ const Highlights = () => {
   const ratingStars = [1, 2, 3, 4, 5];
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>Highlights</div>
-      <div style={rowStyle}>
-        <div>
-          <div>Duration</div>
-          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{formatDuration(duration)}</div>
-          <span style={{ fontSize: '12px', color: '#888', padding: '2px 6px', backgroundColor: '#ececec', borderRadius: '12px' }}>
-            Ongoing
-          </span>
-        </div>
-        <div>
-          <div>Ratings</div>
+    <div style={containerLayout}>
+      <div style={containerStyle}>
+        <div style={headerStyle}>Highlights</div>
+        <div style={rowStyle}>
           <div>
-            {ratingStars.map((star) => (
-              <span
-                key={star}
-                onClick={() => setRating(star)}
-                style={{
-                  cursor: 'pointer',
-                  fontSize: '20px',
-                  color: star <= rating ? '#FFD700' : '#ccc',
-                }}
-              >
-                ★
-              </span>
-            ))}
+            <div>Duration</div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{formatDuration(duration)}</div>
+            <span style={{ fontSize: '12px', color: '#888', padding: '2px 6px', backgroundColor: '#ececec', borderRadius: '12px' }}>
+              Ongoing
+            </span>
+          </div>
+          <div>
+            <div>Ratings</div>
+            <div>
+              {ratingStars.map((star) => (
+                <span
+                  key={star}
+                  onClick={() => setRating(star)}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '20px',
+                    color: star <= rating ? '#FFD700' : '#ccc',
+                  }}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>

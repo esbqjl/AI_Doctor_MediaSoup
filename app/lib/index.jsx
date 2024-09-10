@@ -1,368 +1,368 @@
-import domready from 'domready';
-import UrlParse from 'url-parse';
-import React from 'react';
-import { render } from 'react-dom';
-import { Provider } from 'react-redux';
-import {
-	applyMiddleware as applyReduxMiddleware,
-	createStore as createReduxStore
-} from 'redux';
-import thunk from 'redux-thunk';
-// import { createLogger as createReduxLogger } from 'redux-logger';
-import randomString from 'random-string';
-import * as faceapi from 'face-api.js';
-import Logger from './Logger';
-import * as utils from './utils';
-import randomName from './randomName';
-import deviceInfo from './deviceInfo';
-import RoomClient from './RoomClient';
-import RoomContext from './RoomContext';
-import * as cookiesManager from './cookiesManager';
-import * as stateActions from './redux/stateActions';
-import reducers from './redux/reducers';
-import Room from './components/Room';
-import NavBar from './components/NavBar';
-import TopBar from './components/TopBar';
-import DateDisplay from './components/DateDisplay';
-import DoctorSchedule from './components/DoctorSchedule';
-import ControlBar from './components/ControlBar';
-import Highlights from './components/Highlights';
-import HealthSummary from './components/HealthSummary';
+	import domready from 'domready';
+	import UrlParse from 'url-parse';
+	import React from 'react';
+	import { render } from 'react-dom';
+	import { Provider } from 'react-redux';
+	import {
+		applyMiddleware as applyReduxMiddleware,
+		createStore as createReduxStore
+	} from 'redux';
+	import thunk from 'redux-thunk';
+	// import { createLogger as createReduxLogger } from 'redux-logger';
+	import randomString from 'random-string';
+	import * as faceapi from 'face-api.js';
+	import Logger from './Logger';
+	import * as utils from './utils';
+	import randomName from './randomName';
+	import deviceInfo from './deviceInfo';
+	import RoomClient from './RoomClient';
+	import RoomContext from './RoomContext';
+	import DateDisplay from './components/DateDisplay';
+	import * as cookiesManager from './cookiesManager';
+	import * as stateActions from './redux/stateActions';
+	import reducers from './redux/reducers';
+	import Room from './components/Room';
+	import NavBar from './components/NavBar';
+	import TopBar from './components/TopBar';
 
-const logger = new Logger();
-const reduxMiddlewares = [ thunk ];
+	import DoctorSchedule from './components/DoctorSchedule';
+	import ControlBar from './components/ControlBar';
+	import Highlights from './components/Highlights';
+	import HealthSummary from './components/HealthSummary';
 
-// if (process.env.NODE_ENV === 'development')
-// {
-// 	const reduxLogger = createReduxLogger(
-// 		{
-// 			duration  : true,
-// 			timestamp : false,
-// 			level     : 'log',
-// 			logErrors : true
-// 		});
+	const logger = new Logger();
+	const reduxMiddlewares = [ thunk ];
 
-// 	reduxMiddlewares.push(reduxLogger);
-// }
+	// if (process.env.NODE_ENV === 'development')
+	// {
+	// 	const reduxLogger = createReduxLogger(
+	// 		{
+	// 			duration  : true,
+	// 			timestamp : false,
+	// 			level     : 'log',
+	// 			logErrors : true
+	// 		});
 
-let roomClient;
-const store = createReduxStore(
-	reducers,
-	undefined,
-	applyReduxMiddleware(...reduxMiddlewares)
-);
+	// 	reduxMiddlewares.push(reduxLogger);
+	// }
 
-window.STORE = store;
+	let roomClient;
+	const store = createReduxStore(
+		reducers,
+		undefined,
+		applyReduxMiddleware(...reduxMiddlewares)
+	);
 
-RoomClient.init({ store });
+	window.STORE = store;
 
-domready(async () =>
-{
-	logger.debug('DOM ready');
+	RoomClient.init({ store });
 
-	await utils.initialize();
-
-	run();
-});
-
-async function run()
-{
-	logger.debug('run() [environment:%s]', process.env.NODE_ENV);
-
-	const urlParser = new UrlParse(window.location.href, true);
-	const peerId = randomString({ length: 8 }).toLowerCase();
-	let roomId = urlParser.query.roomId;
-	let displayName =
-		urlParser.query.displayName || (cookiesManager.getUser() || {}).displayName;
-	const handlerName = urlParser.query.handlerName || urlParser.query.handler;
-	const forceTcp = urlParser.query.forceTcp === 'true';
-	const produce = urlParser.query.produce !== 'false';
-	const consume = urlParser.query.consume !== 'false';
-	const datachannel = urlParser.query.datachannel !== 'false';
-	const forceVP8 = urlParser.query.forceVP8 === 'true';
-	const forceH264 = urlParser.query.forceH264 === 'true';
-	const forceVP9 = urlParser.query.forceVP9 === 'true';
-	const enableWebcamLayers = urlParser.query.enableWebcamLayers !== 'false';
-	const enableSharingLayers = urlParser.query.enableSharingLayers !== 'false';
-	const webcamScalabilityMode = urlParser.query.webcamScalabilityMode;
-	const sharingScalabilityMode = urlParser.query.sharingScalabilityMode;
-	const numSimulcastStreams = urlParser.query.numSimulcastStreams ?
-		Number(urlParser.query.numSimulcastStreams) : 3;
-	const info = urlParser.query.info === 'true';
-	const faceDetection = urlParser.query.faceDetection === 'true';
-	const externalVideo = urlParser.query.externalVideo === 'true';
-	const throttleSecret = urlParser.query.throttleSecret;
-	const e2eKey = urlParser.query.e2eKey;
-	const consumerReplicas = urlParser.query.consumerReplicas;
-
-	// Enable face detection on demand.
-	if (faceDetection)
-		await faceapi.loadTinyFaceDetectorModel('/resources/face-detector-models');
-
-	if (info)
+	domready(async () =>
 	{
-		// eslint-disable-next-line require-atomic-updates
-		window.SHOW_INFO = true;
-	}
+		logger.debug('DOM ready');
 
-	if (throttleSecret)
+		await utils.initialize();
+
+		run();
+	});
+
+	async function run()
 	{
-		// eslint-disable-next-line require-atomic-updates
-		window.NETWORK_THROTTLE_SECRET = throttleSecret;
-	}
+		logger.debug('run() [environment:%s]', process.env.NODE_ENV);
 
-	if (!roomId)
-	{
-		roomId = randomString({ length: 8 }).toLowerCase();
+		const urlParser = new UrlParse(window.location.href, true);
+		const peerId = randomString({ length: 8 }).toLowerCase();
+		let roomId = urlParser.query.roomId;
+		let displayName =
+			urlParser.query.displayName || (cookiesManager.getUser() || {}).displayName;
+		const handlerName = urlParser.query.handlerName || urlParser.query.handler;
+		const forceTcp = urlParser.query.forceTcp === 'true';
+		const produce = urlParser.query.produce !== 'false';
+		const consume = urlParser.query.consume !== 'false';
+		const datachannel = urlParser.query.datachannel !== 'false';
+		const forceVP8 = urlParser.query.forceVP8 === 'true';
+		const forceH264 = urlParser.query.forceH264 === 'true';
+		const forceVP9 = urlParser.query.forceVP9 === 'true';
+		const enableWebcamLayers = urlParser.query.enableWebcamLayers !== 'false';
+		const enableSharingLayers = urlParser.query.enableSharingLayers !== 'false';
+		const webcamScalabilityMode = urlParser.query.webcamScalabilityMode;
+		const sharingScalabilityMode = urlParser.query.sharingScalabilityMode;
+		const numSimulcastStreams = urlParser.query.numSimulcastStreams ?
+			Number(urlParser.query.numSimulcastStreams) : 3;
+		const info = urlParser.query.info === 'true';
+		const faceDetection = urlParser.query.faceDetection === 'true';
+		const externalVideo = urlParser.query.externalVideo === 'true';
+		const throttleSecret = urlParser.query.throttleSecret;
+		const e2eKey = urlParser.query.e2eKey;
+		const consumerReplicas = urlParser.query.consumerReplicas;
 
-		urlParser.query.roomId = roomId;
-		window.history.pushState('', '', urlParser.toString());
-	}
+		// Enable face detection on demand.
+		if (faceDetection)
+			await faceapi.loadTinyFaceDetectorModel('/resources/face-detector-models');
 
-	// Get the effective/shareable Room URL.
-	const roomUrlParser = new UrlParse(window.location.href, true);
-
-	for (const key of Object.keys(roomUrlParser.query))
-	{
-		// Don't keep some custom params.
-		switch (key)
+		if (info)
 		{
-			case 'roomId':
-			case 'handlerName':
-			case 'handler':
-			case 'forceTcp':
-			case 'produce':
-			case 'consume':
-			case 'datachannel':
-			case 'forceVP8':
-			case 'forceH264':
-			case 'forceVP9':
-			case 'enableWebcamLayers':
-			case 'enableSharingLayers':
-			case 'webcamScalabilityMode':
-			case 'sharingScalabilityMode':
-			case 'numSimulcastStreams':
-			case 'info':
-			case 'faceDetection':
-			case 'externalVideo':
-			case 'throttleSecret':
-			case 'e2eKey':
-			case 'consumerReplicas':
-			{
-				break;
-			}
+			// eslint-disable-next-line require-atomic-updates
+			window.SHOW_INFO = true;
+		}
 
-			default:
+		if (throttleSecret)
+		{
+			// eslint-disable-next-line require-atomic-updates
+			window.NETWORK_THROTTLE_SECRET = throttleSecret;
+		}
+
+		if (!roomId)
+		{
+			roomId = randomString({ length: 8 }).toLowerCase();
+
+			urlParser.query.roomId = roomId;
+			window.history.pushState('', '', urlParser.toString());
+		}
+
+		// Get the effective/shareable Room URL.
+		const roomUrlParser = new UrlParse(window.location.href, true);
+
+		for (const key of Object.keys(roomUrlParser.query))
+		{
+			// Don't keep some custom params.
+			switch (key)
 			{
-				delete roomUrlParser.query[key];
+				case 'roomId':
+				case 'handlerName':
+				case 'handler':
+				case 'forceTcp':
+				case 'produce':
+				case 'consume':
+				case 'datachannel':
+				case 'forceVP8':
+				case 'forceH264':
+				case 'forceVP9':
+				case 'enableWebcamLayers':
+				case 'enableSharingLayers':
+				case 'webcamScalabilityMode':
+				case 'sharingScalabilityMode':
+				case 'numSimulcastStreams':
+				case 'info':
+				case 'faceDetection':
+				case 'externalVideo':
+				case 'throttleSecret':
+				case 'e2eKey':
+				case 'consumerReplicas':
+				{
+					break;
+				}
+
+				default:
+				{
+					delete roomUrlParser.query[key];
+				}
 			}
 		}
-	}
-	delete roomUrlParser.hash;
+		delete roomUrlParser.hash;
 
-	const roomUrl = roomUrlParser.toString();
+		const roomUrl = roomUrlParser.toString();
 
-	let displayNameSet;
+		let displayNameSet;
 
-	// If displayName was provided via URL or Cookie, we are done.
-	if (displayName)
-	{
-		displayNameSet = true;
-	}
-	// Otherwise pick a random name and mark as "not set".
-	else
-	{
-		displayNameSet = false;
-		displayName = randomName();
-	}
-
-	// Get current device info.
-	const device = deviceInfo();
-
-	store.dispatch(
-		stateActions.setRoomUrl(roomUrl));
-
-	store.dispatch(
-		stateActions.setRoomFaceDetection(faceDetection));
-
-	store.dispatch(
-		stateActions.setMe({ peerId, displayName, displayNameSet, device }));
-
-	roomClient = new RoomClient(
+		// If displayName was provided via URL or Cookie, we are done.
+		if (displayName)
 		{
-			roomId,
-			peerId,
-			displayName,
-			device,
-			handlerName : handlerName,
-			forceTcp,
-			produce,
-			consume,
-			datachannel,
-			forceVP8,
-			forceH264,
-			forceVP9,
-			enableWebcamLayers,
-			enableSharingLayers,
-			webcamScalabilityMode,
-			sharingScalabilityMode,
-			numSimulcastStreams,
-			externalVideo,
-			e2eKey,
-			consumerReplicas
-		});
+			displayNameSet = true;
+		}
+		// Otherwise pick a random name and mark as "not set".
+		else
+		{
+			displayNameSet = false;
+			displayName = randomName();
+		}
 
-	// NOTE: For debugging.
-	// eslint-disable-next-line require-atomic-updates
-	window.CLIENT = roomClient;
-	// eslint-disable-next-line require-atomic-updates
-	window.CC = roomClient;
+		// Get current device info.
+		const device = deviceInfo();
 
-	render(
-		
-		<Provider store={store}>
+		store.dispatch(
+			stateActions.setRoomUrl(roomUrl));
+
+		store.dispatch(
+			stateActions.setRoomFaceDetection(faceDetection));
+
+		store.dispatch(
+			stateActions.setMe({ peerId, displayName, displayNameSet, device }));
+
+		roomClient = new RoomClient(
+			{
+				roomId,
+				peerId,
+				displayName,
+				device,
+				handlerName : handlerName,
+				forceTcp,
+				produce,
+				consume,
+				datachannel,
+				forceVP8,
+				forceH264,
+				forceVP9,
+				enableWebcamLayers,
+				enableSharingLayers,
+				webcamScalabilityMode,
+				sharingScalabilityMode,
+				numSimulcastStreams,
+				externalVideo,
+				e2eKey,
+				consumerReplicas
+			});
+
+		// NOTE: For debugging.
+		// eslint-disable-next-line require-atomic-updates
+		window.CLIENT = roomClient;
+		// eslint-disable-next-line require-atomic-updates
+		window.CC = roomClient;
+
+		render(
 			
-			<RoomContext.Provider value={roomClient}>
-			
-				<TopBar />
-				<NavBar />
-				<DateDisplay />
-				<Room />
-				<DoctorSchedule />
-				<ControlBar />
-				<Highlights />
-				<HealthSummary />
-			</RoomContext.Provider>
-		</Provider>,
-		document.getElementById('mediasoup-demo-app-container')
-	);
-}
+			<Provider store={store}>
+				
+				<RoomContext.Provider value={roomClient}>
+					<NavBar />
+					<Room />
+					<TopBar />
+					
+					<DateDisplay />
+					<DoctorSchedule />
+					<Highlights />
+					<HealthSummary />
+				</RoomContext.Provider>
+			</Provider>,
+			document.getElementById('mediasoup-demo-app-container')
+		);
+	}
 
-// NOTE: Debugging stuff.
+	// NOTE: Debugging stuff.
 
-window.__sendSdps = function()
-{
-	logger.warn('>>> send transport local SDP offer:');
-	logger.warn(
-		roomClient._sendTransport._handler._pc.localDescription.sdp);
-
-	logger.warn('>>> send transport remote SDP answer:');
-	logger.warn(
-		roomClient._sendTransport._handler._pc.remoteDescription.sdp);
-};
-
-window.__recvSdps = function()
-{
-	logger.warn('>>> recv transport remote SDP offer:');
-	logger.warn(
-		roomClient._recvTransport._handler._pc.remoteDescription.sdp);
-
-	logger.warn('>>> recv transport local SDP answer:');
-	logger.warn(
-		roomClient._recvTransport._handler._pc.localDescription.sdp);
-};
-
-let dataChannelTestInterval = null;
-
-window.__startDataChannelTest = function()
-{
-	let number = 0;
-
-	const buffer = new ArrayBuffer(32);
-	const view = new DataView(buffer);
-
-	dataChannelTestInterval = window.setInterval(() =>
+	window.__sendSdps = function()
 	{
+		logger.warn('>>> send transport local SDP offer:');
+		logger.warn(
+			roomClient._sendTransport._handler._pc.localDescription.sdp);
+
+		logger.warn('>>> send transport remote SDP answer:');
+		logger.warn(
+			roomClient._sendTransport._handler._pc.remoteDescription.sdp);
+	};
+
+	window.__recvSdps = function()
+	{
+		logger.warn('>>> recv transport remote SDP offer:');
+		logger.warn(
+			roomClient._recvTransport._handler._pc.remoteDescription.sdp);
+
+		logger.warn('>>> recv transport local SDP answer:');
+		logger.warn(
+			roomClient._recvTransport._handler._pc.localDescription.sdp);
+	};
+
+	let dataChannelTestInterval = null;
+
+	window.__startDataChannelTest = function()
+	{
+		let number = 0;
+
+		const buffer = new ArrayBuffer(32);
+		const view = new DataView(buffer);
+
+		dataChannelTestInterval = window.setInterval(() =>
+		{
+			if (window.DP)
+			{
+				view.setUint32(0, number++);
+				roomClient.sendChatMessage(buffer);
+			}
+		}, 100);
+	};
+
+	window.__stopDataChannelTest = function()
+	{
+		window.clearInterval(dataChannelTestInterval);
+
+		const buffer = new ArrayBuffer(32);
+		const view = new DataView(buffer);
+
 		if (window.DP)
 		{
-			view.setUint32(0, number++);
-			roomClient.sendChatMessage(buffer);
+			view.setUint32(0, Math.pow(2, 32) - 1);
+			window.DP.send(buffer);
 		}
-	}, 100);
-};
+	};
 
-window.__stopDataChannelTest = function()
-{
-	window.clearInterval(dataChannelTestInterval);
-
-	const buffer = new ArrayBuffer(32);
-	const view = new DataView(buffer);
-
-	if (window.DP)
+	window.__testSctp = async function({ timeout = 100, bot = false } = {})
 	{
-		view.setUint32(0, Math.pow(2, 32) - 1);
-		window.DP.send(buffer);
-	}
-};
+		let dp;
 
-window.__testSctp = async function({ timeout = 100, bot = false } = {})
-{
-	let dp;
-
-	if (!bot)
-	{
-		await window.CLIENT.enableChatDataProducer();
-
-		dp = window.CLIENT._chatDataProducer;
-	}
-	else
-	{
-		await window.CLIENT.enableBotDataProducer();
-
-		dp = window.CLIENT._botDataProducer;
-	}
-
-	logger.warn(
-		'<<< testSctp: DataProducer created [bot:%s, streamId:%d, readyState:%s]',
-		bot ? 'true' : 'false',
-		dp.sctpStreamParameters.streamId,
-		dp.readyState);
-
-	function send()
-	{
-		dp.send(`I am streamId ${dp.sctpStreamParameters.streamId}`);
-	}
-
-	if (dp.readyState === 'open')
-	{
-		send();
-	}
-	else
-	{
-		dp.on('open', () =>
+		if (!bot)
 		{
-			logger.warn(
-				'<<< testSctp: DataChannel open [streamId:%d]',
-				dp.sctpStreamParameters.streamId);
+			await window.CLIENT.enableChatDataProducer();
 
+			dp = window.CLIENT._chatDataProducer;
+		}
+		else
+		{
+			await window.CLIENT.enableBotDataProducer();
+
+			dp = window.CLIENT._botDataProducer;
+		}
+
+		logger.warn(
+			'<<< testSctp: DataProducer created [bot:%s, streamId:%d, readyState:%s]',
+			bot ? 'true' : 'false',
+			dp.sctpStreamParameters.streamId,
+			dp.readyState);
+
+		function send()
+		{
+			dp.send(`I am streamId ${dp.sctpStreamParameters.streamId}`);
+		}
+
+		if (dp.readyState === 'open')
+		{
 			send();
-		});
-	}
+		}
+		else
+		{
+			dp.on('open', () =>
+			{
+				logger.warn(
+					'<<< testSctp: DataChannel open [streamId:%d]',
+					dp.sctpStreamParameters.streamId);
 
-	setTimeout(() => window.__testSctp({ timeout, bot }), timeout);
-};
+				send();
+			});
+		}
 
-setInterval(() =>
-{
-	if (window.CLIENT._sendTransport)
-	{
-		window.H1 = window.CLIENT._sendTransport._handler;
-		window.PC1 = window.CLIENT._sendTransport._handler._pc;
-		window.DP = window.CLIENT._chatDataProducer;
-	}
-	else
-	{
-		delete window.PC1;
-		delete window.DP;
-	}
+		setTimeout(() => window.__testSctp({ timeout, bot }), timeout);
+	};
 
-	if (window.CLIENT._recvTransport)
+	setInterval(() =>
 	{
-		window.H2 = window.CLIENT._recvTransport._handler;
-		window.PC2 = window.CLIENT._recvTransport._handler._pc;
-	}
-	else
-	{
-		delete window.PC2;
-	}
-}, 2000);
+		if (window.CLIENT._sendTransport)
+		{
+			window.H1 = window.CLIENT._sendTransport._handler;
+			window.PC1 = window.CLIENT._sendTransport._handler._pc;
+			window.DP = window.CLIENT._chatDataProducer;
+		}
+		else
+		{
+			delete window.PC1;
+			delete window.DP;
+		}
+
+		if (window.CLIENT._recvTransport)
+		{
+			window.H2 = window.CLIENT._recvTransport._handler;
+			window.PC2 = window.CLIENT._recvTransport._handler._pc;
+		}
+		else
+		{
+			delete window.PC2;
+		}
+	}, 2000);

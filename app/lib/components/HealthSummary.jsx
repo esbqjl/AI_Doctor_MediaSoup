@@ -15,6 +15,17 @@ const fakeMedicalHistory = [
 ];
 
 const HealthSummary = () => {
+
+  const containerLayout = {
+    position: 'absolute',    
+    top: 0,               
+    right: 0,                 
+    paddingBottom: '10px',  
+    paddingRight: '10px', 
+    paddingTop:'170px',
+    width: '400px',
+
+  }
   const containerStyle = {
     padding: '20px',
     borderRadius: '12px',
@@ -81,7 +92,7 @@ const HealthSummary = () => {
   };
 
   return (
-    <div>
+    <div style={containerLayout}>
       {/* Doctor's Notes */}
       <div style={containerStyle}>
         <div style={sectionTitleStyle}>Doctor's Notes</div>
