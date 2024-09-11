@@ -15,6 +15,10 @@ import Stats from './Stats';
 import Ai from './Ai';
 import Notifications from './Notifications';
 import NetworkThrottle from './NetworkThrottle';
+import DoctorSchedule from './DoctorSchedule';
+import Highlights from './Highlights';
+import HealthSummary from './HealthSummary';
+import DateDisplay from './DateDisplay';
 class Room extends React.Component
 {
 	render()
@@ -130,6 +134,10 @@ class Room extends React.Component
 					</div>
 
 					<Stats />
+					<DateDisplay />
+					<DoctorSchedule />
+					<Highlights />
+					<HealthSummary />
 					<Ai    />
 					<If condition={window.NETWORK_THROTTLE_SECRET}>
 						<NetworkThrottle

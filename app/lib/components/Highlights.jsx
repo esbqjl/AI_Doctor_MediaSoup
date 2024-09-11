@@ -26,7 +26,7 @@ const Highlights = () => {
     position: 'absolute',               
     right: 0,  
     bottom:0,  
-    zIndex: 1000,             
+    zIndex: 999,             
     paddingBottom: '30px',  
     paddingRight: '10px', 
     width: '400px',

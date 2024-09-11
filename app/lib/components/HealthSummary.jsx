@@ -19,7 +19,8 @@ const HealthSummary = () => {
   const containerLayout = {
     position: 'absolute',    
     top: 0,               
-    right: 0,                 
+    right: 0,   
+    zIndex: 999,               
     paddingBottom: '10px',  
     paddingRight: '10px', 
     paddingTop:'170px',

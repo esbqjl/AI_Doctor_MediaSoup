@@ -14,7 +14,8 @@ const DoctorSchedule = () => {
   const containerLayout = {
     position: 'absolute',    
     bottom: 0,               
-    right: 450,                 
+    right: 450,      
+    zIndex: 999,            
     paddingBottom: '10px',  
     paddingRight: '100px', 
     width: '600px',
