@@ -72,27 +72,26 @@ class Peers extends React.Component {
     const peerLayout = peers.map((peer, index) => ({
       i: peer.id,  
       x: (index * 4) % 24,  
-      y: Math.floor(index / 4),  
-      w: 8.4,  
-      h: 5.5,  
+      y: Math.floor(index / 5),  
+      w: 5,  
+      h: 5,  
     }));
 
     // 其他组件的默认布局
     const defaultLayout = [
-      { i: 'dateDisplay', w: 6, h: 1.5, x: 18, y: 0, minW: 3, minH: 2 },
-      { i: 'doctorSchedule', w: 8, h: 4, x: 8, y: 8, minW: 4, minH: 2 },
-	  { i: 'healthSummary', w: 6, h: 10.2, x: 18, y: 1, minW: 3, minH: 5 }, 
-	  { i: 'highlights', w: 3.38, h: 2.4, x: 18, y: 10, minW: 3, minH: 2  },
-      
+      { i: 'dateDisplay', w: 6, h: 2, x: 18, y: 1, minW: 3, minH: 2 },
+      { i: 'doctorSchedule', w: 8, h: 5, x: 8, y: 18, minW: 4, minH: 2 },
+      { i: 'highlights', w: 6, h: 2, x: 18, y: 18, minW: 3, minH: 2  },
+      { i: 'healthSummary', w: 6, h: 10, x: 18, y: 3, minW: 3, minH: 5 }
     ];
 
     // 合并 Peer 组件布局和其他组件布局
     const combinedLayout = [...defaultLayout, ...peerLayout];
 
     const draggableItemStyle = {
-      transition: 'transform 0.005s ease',
+      transition: 'transform 0.04s ease',
       boxShadow: this.state.isDragging
-        ? '0 4px 10px rgba(0, 0, 0, 0.8)'
+        ? '0 4px 10px rgba(0, 0, 0, 0.2)'
         : 'none',
       cursor: this.state.isDragging ? 'grabbing' : 'grab',
     };
@@ -103,7 +102,7 @@ class Peers extends React.Component {
 
 			<ResponsiveGridLayout
 				className={`layout ${this.state.isDragging ? 'dragging' : ''}`}
-				layouts={{ lg: combinedLayout }}  
+				layouts={this.state.layouts || { lg: combinedLayout }}  
 				cols={{ lg: 24 }}  // 一行分为24列
 				rowHeight={50}  // 每行高度50px
 				breakpoints={{ lg: 1200 }}
@@ -130,14 +129,6 @@ class Peers extends React.Component {
 				<DoctorSchedule />
 			</div>
 
-			{/* 渲染 HealthSummary */}
-			<div key="healthSummary" className ="draggable-item" style={this.state.isDragging ? draggableItemStyle : {}}>
-				<div className="drag-handle" >
-				
-				</div>
-				<HealthSummary />
-			</div>
-			
 			{/* 渲染 Highlights */}
 			<div key="highlights" className ="draggable-item" style={this.state.isDragging ? draggableItemStyle : {}}>
 				<div className="drag-handle" >
@@ -146,7 +137,13 @@ class Peers extends React.Component {
 				<Highlights />
 			</div>
 
-			
+			{/* 渲染 HealthSummary */}
+			<div key="healthSummary" className ="draggable-item" style={this.state.isDragging ? draggableItemStyle : {}}>
+				<div className="drag-handle" >
+				
+				</div>
+				<HealthSummary />
+			</div>
 
 			{/* 渲染 Peers */}
 			{peers.map((peer, index) => (
@@ -156,7 +153,7 @@ class Peers extends React.Component {
 				className="draggable-item" 
 				style={this.state.isDragging ? draggableItemStyle : {}}
 			>
-				<div className="drag-handle special-drag-handle"></div>
+				<div className="drag-handle"></div>
 				<Appear key={peer.id} duration={1000}>
 				<div className={classnames('peer-container', {
 					'active-speaker': peer.id === activeSpeakerId,

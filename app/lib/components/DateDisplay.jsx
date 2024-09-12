@@ -78,7 +78,7 @@ const DateDisplay = () => {
   };
 
   return (
-    <div style={containerLayout}>
+    <div>
       <div style={containerStyle}>
         <div style={headerStyle}>
           <span>{`${monthNames[month]} ${year}`}</span>

@@ -1,25 +1,18 @@
 [data-component='Peers'] {
 	min-height: 100%;
 	width: 100%;
-
+	overflow: hidden;
 	+desktop() {
 		width: 100%;
-		padding: 40px 0 220px 0;
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		justify-content: center;
-		align-items: center;
-		align-content: center;
+		padding: 80px 0 220px 0;
+		
 	}
 
 	+mobile() {
 		min-height: 100vh;
 		width: 100%;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
+		padding: 80px 0 0 0;
+		
 	}
 
 	> .peer-container {
@@ -57,4 +50,35 @@
 			}
 		}
 	}
+	.draggable-item {
+		position: relative;  /* 保证拖拽句柄能够定位到 grid item 内部 */
+	}
+
+	.draggable-item:hover .drag-handle {
+		opacity: 0.8;  /* 悬浮时显示句柄 */
+	}
+
+	.drag-handle {
+		cursor: grab;
+		padding: 5px;
+		background-color: #C0C0C0;
+		opacity: 0;  /* 默认不可见 */
+		transition: opacity 0.3s ease;  /* 平滑过渡 */
+		position: absolute;  /* 使句柄悬浮在组件内部 */
+		top: 0;
+		left: 0;
+		right: 0;
+		text-align: center;  /* 居中显示文本 */
+		/* 设置左上角和右上角圆角 */
+		border-top-left-radius: 7px;  /* 左上角弧度 */
+		border-top-right-radius: 7px; /* 右上角弧度 */
+		border-bottom-left-radius: 0;  /* 左下角无弧度 */
+		border-bottom-right-radius: 0; /* 右下角无弧度 */
+	}
+	.special-drag-handle {
+		position: relative
+	}
+
+	
+
 }

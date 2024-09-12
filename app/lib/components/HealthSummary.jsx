@@ -93,7 +93,7 @@ const HealthSummary = () => {
   };
 
   return (
-    <div style={containerLayout}>
+    <div>
       {/* Doctor's Notes */}
       <div style={containerStyle}>
         <div style={sectionTitleStyle}>Doctor's Notes</div>

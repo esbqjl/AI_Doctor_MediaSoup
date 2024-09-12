@@ -17,18 +17,12 @@
 	import deviceInfo from './deviceInfo';
 	import RoomClient from './RoomClient';
 	import RoomContext from './RoomContext';
-	import DateDisplay from './components/DateDisplay';
 	import * as cookiesManager from './cookiesManager';
 	import * as stateActions from './redux/stateActions';
 	import reducers from './redux/reducers';
 	import Room from './components/Room';
 	import NavBar from './components/NavBar';
 	import TopBar from './components/TopBar';
-
-	import DoctorSchedule from './components/DoctorSchedule';
-	import ControlBar from './components/ControlBar';
-	import Highlights from './components/Highlights';
-	import HealthSummary from './components/HealthSummary';
 
 	const logger = new Logger();
 	const reduxMiddlewares = [ thunk ];
@@ -228,10 +222,6 @@
 					<Room />
 					<TopBar />
 					
-					<DateDisplay />
-					<DoctorSchedule />
-					<Highlights />
-					<HealthSummary />
 				</RoomContext.Provider>
 			</Provider>,
 			document.getElementById('mediasoup-demo-app-container')

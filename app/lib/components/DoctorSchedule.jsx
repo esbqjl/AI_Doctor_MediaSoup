@@ -72,7 +72,7 @@ const DoctorSchedule = () => {
   };
 
   return (
-    <div style={containerLayout}>
+    <div>
       <div style={containerStyle}>
         <div style={headerStyle}>
           <div>

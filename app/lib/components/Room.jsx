@@ -15,12 +15,10 @@ import Stats from './Stats';
 import Ai from './Ai';
 import Notifications from './Notifications';
 import NetworkThrottle from './NetworkThrottle';
-import DoctorSchedule from './DoctorSchedule';
-import Highlights from './Highlights';
-import HealthSummary from './HealthSummary';
-import DateDisplay from './DateDisplay';
+
 class Room extends React.Component
 {
+
 	render()
 	{
 		const {
@@ -34,6 +32,7 @@ class Room extends React.Component
 		const mediasoupClientVersion = room.mediasoupClientVersion === '__MEDIASOUP_CLIENT_VERSION__'
 			? 'dev'
 			: room.mediasoupClientVersion;
+		
 
 		return (
 			<Appear duration={300}>
@@ -132,12 +131,8 @@ class Room extends React.Component
 							onClick={() => roomClient.restartIce()}
 						/>
 					</div>
-
-					<Stats />
-					<DateDisplay />
-					<DoctorSchedule />
-					<Highlights />
-					<HealthSummary />
+					<Stats/>
+					
 					<Ai    />
 					<If condition={window.NETWORK_THROTTLE_SECRET}>
 						<NetworkThrottle

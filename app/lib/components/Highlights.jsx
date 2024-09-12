@@ -57,7 +57,7 @@ const Highlights = () => {
   const ratingStars = [1, 2, 3, 4, 5];
 
   return (
-    <div style={containerLayout}>
+    <div>
       <div style={containerStyle}>
         <div style={headerStyle}>Highlights</div>
         <div style={rowStyle}>
