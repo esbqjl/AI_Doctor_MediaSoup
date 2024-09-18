@@ -1,16 +1,9 @@
-import React, { useState } from 'react';
-import DateDisplay from './DateDisplay';
-import DoctorSchedule from './DoctorSchedule';
-import HealthSummary from './HealthSummary';
-import Highlights from './Highlights';
+// NavBar.jsx
+import React from 'react';
+import { useRoomContext } from '../RoomContext';
 
 const NavBar = () => {
-  const [active, setActive] = useState({ 
-    DateDisplay: false, 
-    DoctorSchedule: false, 
-    HealthSummary: false, 
-    Highlights: false 
-  });
+  const { visibility, toggleVisibility } = useRoomContext();
 
   const navStyle = {
     position: 'fixed',
@@ -40,39 +33,22 @@ const NavBar = () => {
     textAlign: 'center',
   };
 
-  // Toggle the active state and only allow one component to be active at a time
-  const toggleActive = (name) => {
-    setActive(prev => ({
-      DateDisplay: false,
-      DoctorSchedule: false,
-      HealthSummary: false,
-      Highlights: false,
-      [name]: !prev[name]
-    }));
-  };
-
   return (
     <div style={{ display: 'flex' }}>
       <div style={navStyle}>
-        {Object.keys(active).map((name) => (
-          <div 
+        {Object.keys(visibility).map((name) => (
+          <div
             key={name}
             style={{
               ...iconStyle,
-              backgroundColor: active[name] ? '#ffffff' : '#0028F8',
-              color: active[name] ? '#0028F8' : '#ffffff'
+              backgroundColor: visibility[name] ? '#ffffff' : '#0028F8',
+              color: visibility[name] ? '#0028F8' : '#ffffff',
             }}
-            onClick={() => toggleActive(name)}
+            onClick={() => toggleVisibility(name)}
           >
             {name}
           </div>
         ))}
-      </div>
-      <div style={{ marginLeft: '70px' }}>
-        {active.DateDisplay && <DateDisplay />}
-        {active.DoctorSchedule && <DoctorSchedule />}
-        {active.HealthSummary && <HealthSummary />}
-        {active.Highlights && <Highlights />}
       </div>
     </div>
   );

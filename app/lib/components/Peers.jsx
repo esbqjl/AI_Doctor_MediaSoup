@@ -1,3 +1,4 @@
+// Peers.jsx
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -6,6 +7,7 @@ import * as appPropTypes from './appPropTypes';
 import { Appear } from './transitions';
 import Peer from './Peer';
 import { WidthProvider, Responsive } from 'react-grid-layout';
+import { useRoomContext } from '../RoomContext';
 import DateDisplay from './DateDisplay';
 import DoctorSchedule from './DoctorSchedule';
 import Highlights from './Highlights';
@@ -13,7 +15,6 @@ import HealthSummary from './HealthSummary';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-// Helper function to get layouts from localStorage
 function getFromLS(key) {
   let ls = {};
   if (global.localStorage) {
@@ -26,7 +27,6 @@ function getFromLS(key) {
   return ls[key];
 }
 
-// Helper function to save layouts to localStorage
 function saveToLS(key, value) {
   if (global.localStorage) {
     global.localStorage.setItem(
@@ -38,139 +38,121 @@ function saveToLS(key, value) {
   }
 }
 
-class Peers extends React.Component {
-  constructor(props) {
-    super(props);
+const Peers = (props) => {
+  const { peers, activeSpeakerId } = props;
+  const { visibility } = useRoomContext();
 
-    // Load the layout from localStorage
-    const savedLayouts = getFromLS('peersLayouts') || {};
+  // Load the layout from localStorage
+  const savedLayouts = getFromLS('peersLayouts') || {};
 
-    this.state = {
-      isDragging: false,
-      layouts: savedLayouts || {}, // 初始化布局，从 localStorage 中获取
-    };
-  }
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [layouts, setLayouts] = React.useState(savedLayouts || {});
 
-  handleDragStart = () => {
-    this.setState({ isDragging: true });
+  const handleDragStart = () => {
+    setIsDragging(true);
   };
 
-  handleDragStop = () => {
-    this.setState({ isDragging: false });
+  const handleDragStop = () => {
+    setIsDragging(false);
   };
 
-  // 在布局变化时保存到 localStorage
-  onLayoutChange = (layout, layouts) => {
-    saveToLS('peersLayouts', layouts); // 保存更新的布局到 localStorage
-    this.setState({ layouts });
+  const onLayoutChange = (layout, layouts) => {
+    saveToLS('peersLayouts', layouts);
+    setLayouts(layouts);
   };
 
-  render() {
-    const { peers, activeSpeakerId } = this.props;
+  // 根据 peers 动态生成默认布局
+  const peerLayout = peers.map((peer, index) => ({
+    i: peer.id,
+    x: (index * 4) % 24,
+    y: Math.floor(index / 4),
+    w: 8.4,
+    h: 5.5,
+  }));
 
-    // 根据 peers 动态生成默认布局
-    const peerLayout = peers.map((peer, index) => ({
-      i: peer.id,  
-      x: (index * 4) % 24,  
-      y: Math.floor(index / 4),  
-      w: 8.4,  
-      h: 5.5,  
-    }));
+  // 其他组件的默认布局
+  const defaultLayout = [
+    visibility.DateDisplay && { i: 'dateDisplay', w: 6, h: 1.5, x: 18, y: 0, minW: 3, minH: 2 },
+    visibility.DoctorSchedule && { i: 'doctorSchedule', w: 8, h: 4, x: 8, y: 8, minW: 4, minH: 2 },
+    visibility.HealthSummary && { i: 'healthSummary', w: 6, h: 10.2, x: 18, y: 1, minW: 3, minH: 5 },
+    visibility.Highlights && { i: 'highlights', w: 3.38, h: 2.4, x: 18, y: 10, minW: 3, minH: 2 },
+  ].filter(Boolean); // 过滤掉值为 false 的项
 
-    // 其他组件的默认布局
-    const defaultLayout = [
-      { i: 'dateDisplay', w: 6, h: 1.5, x: 18, y: 0, minW: 3, minH: 2 },
-      { i: 'doctorSchedule', w: 8, h: 4, x: 8, y: 8, minW: 4, minH: 2 },
-	  { i: 'healthSummary', w: 6, h: 10.2, x: 18, y: 1, minW: 3, minH: 5 }, 
-	  { i: 'highlights', w: 3.38, h: 2.4, x: 18, y: 10, minW: 3, minH: 2  },
-      
-    ];
+  // 合并 Peer 组件布局和其他组件布局
+  const combinedLayout = [...defaultLayout, ...peerLayout];
 
-    // 合并 Peer 组件布局和其他组件布局
-    const combinedLayout = [...defaultLayout, ...peerLayout];
+  const draggableItemStyle = {
+    transition: 'transform 0.005s ease',
+    boxShadow: isDragging ? '0 4px 10px rgba(0, 0, 0, 0.8)' : 'none',
+    cursor: isDragging ? 'grabbing' : 'grab',
+  };
 
-    const draggableItemStyle = {
-      transition: 'transform 0.005s ease',
-      boxShadow: this.state.isDragging
-        ? '0 4px 10px rgba(0, 0, 0, 0.8)'
-        : 'none',
-      cursor: this.state.isDragging ? 'grabbing' : 'grab',
-    };
+  return (
+    <div data-component='Peers'>
+      <ResponsiveGridLayout
+        className={`layout ${isDragging ? 'dragging' : ''}`}
+        layouts={{ lg: combinedLayout }}
+        cols={{ lg: 24 }}
+        rowHeight={50}
+        breakpoints={{ lg: 1200 }}
+        onDragStart={handleDragStart}
+        onDragStop={handleDragStop}
+        onLayoutChange={onLayoutChange}
+        preventCollision={true}
+        isBounded={false}
+        verticalCompact={false}
+        draggableHandle='.drag-handle'
+      >
+        {/* 渲染可见的组件 */}
+        {visibility.DateDisplay && (
+          <div key='dateDisplay' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
+            <div className='drag-handle'></div>
+            <DateDisplay />
+          </div>
+        )}
+        {visibility.DoctorSchedule && (
+          <div key='doctorSchedule' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
+            <div className='drag-handle'></div>
+            <DoctorSchedule />
+          </div>
+        )}
+        {visibility.HealthSummary && (
+          <div key='healthSummary' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
+            <div className='drag-handle'></div>
+            <HealthSummary />
+          </div>
+        )}
+        {visibility.Highlights && (
+          <div key='highlights' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
+            <div className='drag-handle'></div>
+            <Highlights />
+          </div>
+        )}
 
-    return (
-      	<div data-component='Peers'>
-        
-
-			<ResponsiveGridLayout
-				className={`layout ${this.state.isDragging ? 'dragging' : ''}`}
-				layouts={{ lg: combinedLayout }}  
-				cols={{ lg: 24 }}  // 一行分为24列
-				rowHeight={50}  // 每行高度50px
-				breakpoints={{ lg: 1200 }}
-				onDragStart={this.handleDragStart}
-				onDragStop={this.handleDragStop}
-				preventCollision={true}
-				isBounded={false}
-				verticalCompact={false}
-				draggableHandle=".drag-handle"  
-			>
-			{/* 渲染 DateDisplay */}
-			<div key="dateDisplay" className ="draggable-item" style={this.state.isDragging ? draggableItemStyle : {}}>
-				<div className="drag-handle" >
-		
-				</div>
-				<DateDisplay />
-			</div>
-
-			{/* 渲染 DoctorSchedule */}
-			<div key="doctorSchedule" className ="draggable-item" style={this.state.isDragging ? draggableItemStyle : {}}>
-				<div className="drag-handle" >
-				
-				</div>
-				<DoctorSchedule />
-			</div>
-
-			{/* 渲染 HealthSummary */}
-			<div key="healthSummary" className ="draggable-item" style={this.state.isDragging ? draggableItemStyle : {}}>
-				<div className="drag-handle" >
-				
-				</div>
-				<HealthSummary />
-			</div>
-			
-			{/* 渲染 Highlights */}
-			<div key="highlights" className ="draggable-item" style={this.state.isDragging ? draggableItemStyle : {}}>
-				<div className="drag-handle" >
-				
-				</div>
-				<Highlights />
-			</div>
-
-			
-
-			{/* 渲染 Peers */}
-			{peers.map((peer, index) => (
-			<div 
-				key={peer.id} 
-				data-grid={peerLayout[index]}  // 动态生成的 peer 布局
-				className="draggable-item" 
-				style={this.state.isDragging ? draggableItemStyle : {}}
-			>
-				<div className="drag-handle special-drag-handle"></div>
-				<Appear key={peer.id} duration={1000}>
-				<div className={classnames('peer-container', {
-					'active-speaker': peer.id === activeSpeakerId,
-				})}>
-					<Peer id={peer.id} />
-				</div>
-				</Appear>
-			</div>
-			))}
-			</ResponsiveGridLayout>
-    	</div>
-    );
-  }
-}
+        {/* 渲染 Peers */}
+        {peers.map((peer, index) => (
+          <div
+            key={peer.id}
+            data-grid={peerLayout[index]} // 动态生成的 peer 布局
+            className='draggable-item'
+            style={isDragging ? draggableItemStyle : {}}
+          >
+            <div className='drag-handle special-drag-handle'></div>
+            <Appear key={peer.id} duration={1000}>
+              <div
+                className={classnames('peer-container', {
+                  'active-speaker': peer.id === activeSpeakerId,
+                })}
+              >
+                <Peer id={peer.id} />
+              </div>
+            </Appear>
+          </div>
+        ))}
+      </ResponsiveGridLayout>
+    </div>
+  );
+};
 
 Peers.propTypes = {
   peers: PropTypes.arrayOf(appPropTypes.Peer).isRequired,
@@ -186,18 +168,13 @@ const mapStateToProps = (state) => {
   };
 };
 
-const PeersContainer = connect(
-  mapStateToProps,
-  null,
-  null,
-  {
-    areStatesEqual: (next, prev) => {
-      return (
-        prev.peers === next.peers &&
-        prev.room.activeSpeakerId === next.room.activeSpeakerId
-      );
-    },
-  }
-)(Peers);
+const PeersContainer = connect(mapStateToProps, null, null, {
+  areStatesEqual: (next, prev) => {
+    return (
+      prev.peers === next.peers &&
+      prev.room.activeSpeakerId === next.room.activeSpeakerId
+    );
+  },
+})(Peers);
 
 export default PeersContainer;
