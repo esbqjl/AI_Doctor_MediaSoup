@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 
 const DateDisplay = () => {
@@ -26,69 +25,18 @@ const DateDisplay = () => {
   const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
   const formattedHours = hours % 12 || 12;
 
-  const containerLayout = {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    zIndex: 1000,
-    width: '400px',
-    height: 'auto',
-    paddingRight: '10px',
-    paddingTop: '80px',
-  };
-
-  const containerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px 20px',
-    borderRadius: '12px',
-    backgroundColor: '#f0f0f0',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    fontFamily: 'Arial, sans-serif',
-  };
-
-  const headerStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    width: '100%',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    color: '#333',
-  };
-
-  const timeStyle = {
-    fontSize: '12px',
-    color: '#666',
-  };
-
-  const calendarStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: '10px',
-    fontSize: '14px',
-    color: '#333',
-  };
-
-  const activeDayStyle = {
-    color: '#0028F8',
-    textDecoration: 'underline',
-  };
-
   return (
-    <div>
-      <div style={containerStyle}>
-        <div style={headerStyle}>
+    <div data-component="DateDisplay">
+      <div className="container">
+        <div className="header">
           <span>{`${monthNames[month]} ${year}`}</span>
-          <span style={timeStyle}>{`${formattedHours}:${formattedMinutes} ${ampm}`}</span>
+          <span className="time">{`${formattedHours}:${formattedMinutes} ${ampm}`}</span>
         </div>
-        <div style={calendarStyle}>
+        <div className="calendar">
           {dayNames.map((name, index) => (
             <div
               key={index}
-              style={index === dayOfWeek ? activeDayStyle : undefined}
+              className={`day ${index === dayOfWeek ? 'active' : ''}`}
             >
               <div>{name}</div>
               <div>{day - (dayOfWeek - index)}</div>
