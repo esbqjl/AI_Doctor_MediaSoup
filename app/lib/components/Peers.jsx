@@ -1,4 +1,3 @@
-// Peers.jsx
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -12,41 +11,17 @@ import DateDisplay from './DateDisplay';
 import DoctorSchedule from './DoctorSchedule';
 import Highlights from './Highlights';
 import HealthSummary from './HealthSummary';
+import SuggestedQuestion from './SuggestedQuestion';
+import ClinicalCodes from './ClinicalCodes';
+
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
-
-function getFromLS(key) {
-  let ls = {};
-  if (global.localStorage) {
-    try {
-      ls = JSON.parse(global.localStorage.getItem('rgl-layouts')) || {};
-    } catch (e) {
-      console.error('Error reading from localStorage', e);
-    }
-  }
-  return ls[key];
-}
-
-function saveToLS(key, value) {
-  if (global.localStorage) {
-    global.localStorage.setItem(
-      'rgl-layouts',
-      JSON.stringify({
-        [key]: value,
-      })
-    );
-  }
-}
 
 const Peers = (props) => {
   const { peers, activeSpeakerId } = props;
   const { visibility } = useRoomContext();
 
-  // Load the layout from localStorage
-  const savedLayouts = getFromLS('peersLayouts') || {};
-
   const [isDragging, setIsDragging] = React.useState(false);
-  const [layouts, setLayouts] = React.useState(savedLayouts || {});
 
   const handleDragStart = () => {
     setIsDragging(true);
@@ -57,31 +32,38 @@ const Peers = (props) => {
   };
 
   const onLayoutChange = (layout, layouts) => {
-    saveToLS('peersLayouts', layouts);
-    setLayouts(layouts);
+    // Handle layout changes here if needed
   };
 
-  // 根据 peers 动态生成默认布局
+  const onResizeStop = (layout, oldItem, newItem) => {
+    // Optionally handle resize stop events
+  };
+
   const peerLayout = peers.map((peer, index) => ({
     i: peer.id,
     x: (index * 4) % 24,
     y: Math.floor(index / 4),
     w: 8.4,
     h: 5.5,
+    minW: 4,
+    minH: 3,
+    maxW: 12,
+    maxH: 8,
   }));
 
-  // 其他组件的默认布局
   const defaultLayout = [
-    visibility.DateDisplay && { i: 'dateDisplay', w: 6, h: 1.5, x: 18, y: 0, minW: 3, minH: 2 },
-    visibility.DoctorSchedule && { i: 'doctorSchedule', w: 8, h: 4, x: 8, y: 8, minW: 4, minH: 2 },
-    visibility.HealthSummary && { i: 'healthSummary', w: 6, h: 10.2, x: 18, y: 1, minW: 3, minH: 5 },
-    visibility.Highlights && { i: 'highlights', w: 3.38, h: 2.4, x: 18, y: 10, minW: 3, minH: 2 },
-  ].filter(Boolean); // 过滤掉值为 false 的项
+    visibility.DateDisplay && { i: 'dateDisplay', w: 6, h: 1.5, x: 18, y: 0, minW: 4, minH: 1.5, maxW:8, maxH: 2.5},
+    visibility.DoctorSchedule && { i: 'doctorSchedule', w: 8, h: 4, x: 8, y: 8, minW: 6, minH: 4 },
+    visibility.HealthSummary && { i: 'healthSummary', w: 6, h: 10.2, x: 18, y: 1, minW: 4, minH: 8 },
+    visibility.Highlights && { i: 'highlights', w: 3.38, h: 2.4, x: 18, y: 10, minW: 2, minH: 2 },
+    visibility.SuggestedQuestion && { i: 'suggestedQuestion', w: 5, h: 1.5, x: 8, y: 3, minW: 4, minH: 1.5 },
+    visibility.ClinicalCodes && { i: 'clinicalcodes', w: 5, h: 1.5, x: 8, y: 5, minW: 4, minH: 1.5 },
+  ].filter(Boolean); // Filter out those components not visible
 
-  // 合并 Peer 组件布局和其他组件布局
   const combinedLayout = [...defaultLayout, ...peerLayout];
 
   const draggableItemStyle = {
+    transform: isDragging ? 'translate(0, 0)' : 'none',
     transition: 'transform 0.005s ease',
     boxShadow: isDragging ? '0 4px 10px rgba(0, 0, 0, 0.8)' : 'none',
     cursor: isDragging ? 'grabbing' : 'grab',
@@ -90,6 +72,7 @@ const Peers = (props) => {
   return (
     <div data-component='Peers'>
       <ResponsiveGridLayout
+        useCSSTransforms={true}
         className={`layout ${isDragging ? 'dragging' : ''}`}
         layouts={{ lg: combinedLayout }}
         cols={{ lg: 24 }}
@@ -98,30 +81,35 @@ const Peers = (props) => {
         onDragStart={handleDragStart}
         onDragStop={handleDragStop}
         onLayoutChange={onLayoutChange}
+        onResizeStop={onResizeStop}
         preventCollision={true}
         isBounded={false}
         verticalCompact={false}
         draggableHandle='.drag-handle'
+        isResizable={true} // Enable resizing
       >
-        {/* 渲染可见的组件 */}
+
         {visibility.DateDisplay && (
           <div key='dateDisplay' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
             <div className='drag-handle'></div>
             <DateDisplay />
           </div>
         )}
+
         {visibility.DoctorSchedule && (
           <div key='doctorSchedule' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
             <div className='drag-handle'></div>
             <DoctorSchedule />
           </div>
         )}
+
         {visibility.HealthSummary && (
           <div key='healthSummary' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
             <div className='drag-handle'></div>
             <HealthSummary />
           </div>
         )}
+
         {visibility.Highlights && (
           <div key='highlights' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
             <div className='drag-handle'></div>
@@ -129,11 +117,24 @@ const Peers = (props) => {
           </div>
         )}
 
-        {/* 渲染 Peers */}
+        {visibility.SuggestedQuestion && (
+          <div key='suggestedQuestion' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
+            <div className='drag-handle'></div>
+            <SuggestedQuestion />
+          </div>
+        )}
+
+        {visibility.ClinicalCodes && (
+          <div key='clinicalcodes' className='draggable-item' style={isDragging ? draggableItemStyle : {}}>
+            <div className='drag-handle'></div>
+            <ClinicalCodes />
+          </div>
+        )}
+
         {peers.map((peer, index) => (
           <div
             key={peer.id}
-            data-grid={peerLayout[index]} // 动态生成的 peer 布局
+            data-grid={peerLayout[index]}
             className='draggable-item'
             style={isDragging ? draggableItemStyle : {}}
           >
