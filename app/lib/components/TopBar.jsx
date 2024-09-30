@@ -1,72 +1,32 @@
-
 import React from 'react';
+import { IoIosChatboxes, IoIosNotifications } from "react-icons/io"; // 引入所需图标
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 const TopBar = () => {
-  const topBarStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '10px 20px',
-    backgroundColor: '#f8f8f8',
-    boxShadow: '0px 1px 5px rgba(0, 0, 0, 0.1)',
-    position: 'fixed',
-    top: 0,
-    width: '100%',
-    height: '60px',
-    zIndex: 100,
-  };
-
-  const logoStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  };
-
-  const logoTextStyle = {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#0028F8',
-  };
-
-  const timeStyle = {
-    fontSize: '14px',
-    color: '#555',
-  };
-
-  const userSectionStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-  };
-
-  const userImageStyle = {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    backgroundColor: '#ccc',
-  };
-
-  const iconStyle = {
-    fontSize: '18px',
-    cursor: 'pointer',
-  };
+  const userName = 'Aaron Thiel';
+  const userAvatar = '/images/user_avatar.png'; // 确保这个路径正确
+  const logoImage = '/images/logo.png'; // 确保这个路径正确
 
   return (
-    <div style={topBarStyle}>
-      <div style={logoStyle}>
-        <div className="logo">
-          <img src="/path/to/logo.png" alt="Healthi AI Logo" style={{ height: '30px' }} />
-        </div>
-        <span style={logoTextStyle}>Healthi AI</span>
+    <div data-component="TopBar">
+      <div className="logo-text">
+        <img src={logoImage} alt="Logo" className="logo-image" />
+        <span className="app-name">Healthi AI</span>
       </div>
-      <div style={timeStyle}>July 2024, 08:23 am</div>
-      <div style={userSectionStyle}>
-        <div style={userImageStyle}></div>
-        <i className="fas fa-bell" style={iconStyle}></i>
-        <i className="fas fa-cog" style={iconStyle}></i>
+      <div className="user-section">
+        <img src={userAvatar}  className="user-avatar" />
+        <span className="user-name">{userName}</span>
+        <FontAwesomeIcon icon={faChevronDown} className="icon dropdown-arrow" />
+        <div className="icon-circle">
+          <IoIosChatboxes className="icon chat-icon" />
+        </div>
+        <div className="icon-circle">
+          <IoIosNotifications className="icon notification-icon" />
+        </div>
       </div>
     </div>
   );
-};
+}; 
 
 export default TopBar;
