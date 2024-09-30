@@ -109,7 +109,7 @@ def send_cds_hpi_callback(output, sid):
 
 
 def start_socketio_server():
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+    socketio.run(app, host='::', port=5000, debug=True)
 
 def transcript_callback(text, sid):
     print(f"[main] transcript callback for SID: {sid}, patient_mode: {state_store[sid]['patient_mode']}, patient_recording: {state_store[sid]['patient_recording']}")

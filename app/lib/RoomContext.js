@@ -12,6 +12,8 @@ export function RoomProvider({ children, roomClient }) {
     DoctorSchedule: false,
     HealthSummary: false,
     Highlights: false,
+    SuggestedQuestion: false,
+    ClinicalCodes: false,
   });
 
   // 定义切换可见性的函数
