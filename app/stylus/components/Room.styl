@@ -1,320 +1,283 @@
-[data-component='Room'] {
-	position: relative;
-	height: 100%;
-	width: 100%;
+// app/stylus/components/Room.styl
 
-	AppearFadeIn(300ms);
+[data-component='Room']
+  position: relative
+  height: 100%
+  width: 100%
 
-	> .state {
-		position: fixed;
-		z-index: 100;
-		display: flex;
-		flex-direction: row;
-		justify-content: center;
-		align-items: center;
-		border-radius: 25px;
-		background-color: $COLOR_BG_1;
+  AppearFadeIn(300ms)
 
-		+desktop() {
-			top: 20px;
-			left: 20px;
-			width: 124px;
-		}
+  > .state
+    position: fixed
+    z-index: 100
+    display: flex
+    flex-direction: row
+    justify-content: center
+    align-items: center
+    border-radius: 25px
+    background-color: $COLOR_BG_1
 
-		+mobile() {
-			top: 10px;
-			left: 10px;
-			width: 110px;
-		}
+    +desktop()
+      top: 20px
+      left: 20px
+      width: 124px
 
-		> .icon {
-			flex: 0 0 auto;
-			border-radius: 100%;
+    +mobile()
+      top: 10px
+      left: 10px
+      width: 110px
 
-			+desktop() {
-				margin: 6px;
-				margin-right: 0;
-				height: 16px;
-				width: 16px;
-			}
+    > .icon
+      flex: 0 0 auto
+      border-radius: 100%
 
-			+mobile() {
-				margin: 4px;
-				margin-right: 0;
-				height: 16px;
-				width: 16px;
-			}
+      +desktop()
+        margin: 6px
+        margin-right: 0
+        height: 16px
+        width: 16px
 
-			&.new, &.closed {
-				background-color: rgba(#aaa, 0.5);
-			}
+      +mobile()
+        margin: 4px
+        margin-right: 0
+        height: 16px
+        width: 16px
 
-			&.connecting {
-				animation: Room-info-state-connecting .75s infinite linear;
-			}
+      &.new, &.closed
+        background-color: rgba(#aaa, 0.5)
 
-			&.connected {
-				background-color: rgba(#30bd18, 0.75);
+      &.connecting
+        animation: Room-info-state-connecting .75s infinite linear
 
-				+mobile() {
-					display: none;
-				}
-			}
-		}
+      &.connected
+        background-color: rgba(#30bd18, 0.75)
 
-		> .text {
-			flex: 100 0 auto;
-			user-select: none;
-			pointer-events: none;
-			text-align: center;
-			text-transform: uppercase;
-			font-family: 'Roboto';
-			font-weight: 400;
-			color: rgba(#fff, 0.75);
+        +mobile()
+          display: none
 
-			+desktop() {
-				font-size: 12px;
-			}
+    > .text
+      flex: 100 0 auto
+      user-select: none
+      pointer-events: none
+      text-align: center
+      text-transform: uppercase
+      font-family: 'Roboto'
+      font-weight: 400
+      color: rgba(#fff, 0.75)
 
-			+mobile() {
-				font-size: 10px;
-			}
+      +desktop()
+        font-size: 12px
 
-			&.connected {
-				+mobile() {
-					display: none;
-				}
-			}
-		}
-	}
+      +mobile()
+        font-size: 10px
 
-	> .info {
-		position: fixed;
-		z-index: 100;
-		+desktop() {
-			top: 80px;
-			left: 70px;
-			width: 124px;
-		}
+      &.connected
+        +mobile()
+          display: none
 
-		+mobile() {
-			top: 40px;
-			height: 18px;
-			width: 110px;
-		}
+  > .info
+    position: fixed
+    z-index: 100
 
-		> p.text {
-			height: 18px;
-			left: 10px;
-			display: flex;
-			flex-direction: row;
-			justify-content: center;
-			align-items: center;
-			flex: 100 0 auto;
-			user-select: none;
-			pointer-events: none;
-			text-align: center;
-			font-family: 'Roboto';
-			font-weight: 400;
-			color: rgba(#fff, 0.75);
-			border-radius: 25px;
-			background-color: $COLOR_BG_1;
-			margin-bottom: 2px;
+    +desktop()
+      top: 80px
+      left: 70px
+      width: 124px
 
-			+desktop() {
-				font-size: 11px;
-			}
+    +mobile()
+      top: 40px
+      height: 18px
+      width: 110px
 
-			+mobile() {
-				font-size: 9px;
-			}
+    > p.text
+      height: 18px
+      left: 10px
+      display: flex
+      flex-direction: row
+      justify-content: center
+      align-items: center
+      flex: 100 0 auto
+      user-select: none
+      pointer-events: none
+      text-align: center
+      font-family: 'Roboto'
+      font-weight: 400
+      color: rgba(#fff, 0.75)
+      border-radius: 25px
+      background-color: $COLOR_BG_1
+      margin-bottom: 2px
 
-			> span.label {
-				color: rgba(#fff, 0.45);
-			}
-		}
-	}
+      +desktop()
+        font-size: 11px
 
-	
+      +mobile()
+        font-size: 9px
 
-	> .room-link-wrapper {
-		pointer-events: none;
-		position: absolute;
-		z-index: 1;
-		top: 0;
-		left: 0;
-		right: 0;
-		display: flex;
-		flex-direction: row;
-		justify-content: center;
+      > span.label
+        color: rgba(#fff, 0.45)
 
-		> .room-link {
-			width: auto;
-			background-color: $COLOR_BG_1;
-			border-bottom-right-radius: 4px;
-			border-bottom-left-radius: 4px;
-			box-shadow: 0px 3px 12px 2px rgba(#111, 0.4);
+  > .room-link-wrapper
+    pointer-events: none
+    position: absolute
+    z-index: 1
+    top: 0
+    left: 0
+    right: 0
+    display: flex
+    flex-direction: row
+    justify-content: center
 
-			> a.link {
-				display: block;;
-				user-select: none;
-				pointer-events: auto;
-				text-transform: uppercase;
-				font-family: 'Roboto';
-				font-weight: 400;
-				color: rgba(#fff, 0.75);
-				cursor: pointer;
-				text-decoration: none;
-				transition-property: color;
-				transition-duration: 0.1s;
+    > .room-link
+      width: auto
+      background-color: $COLOR_BG_1
+      border-bottom-right-radius: 4px
+      border-bottom-left-radius: 4px
+      box-shadow: 0px 3px 12px 2px rgba(#111, 0.4)
 
-				+desktop() {
-					padding: 10px 20px;
-					font-size: 12px;
-				}
+      > a.link
+        display: block
+        user-select: none
+        pointer-events: auto
+        text-transform: uppercase
+        font-family: 'Roboto'
+        font-weight: 400
+        color: rgba(#fff, 0.75)
+        cursor: pointer
+        text-decoration: none
+        transition-property: color
+        transition-duration: 0.1s
 
-				+mobile() {
-					padding: 6px 10px;
-					font-size: 10px;
-				}
+        +desktop()
+          padding: 10px 20px
+          font-size: 12px
 
-				&:hover {
-					color: #fff;
-					text-decoration: underline;
-				}
-			}
-		}
-	}
+        +mobile()
+          padding: 6px 10px
+          font-size: 10px
 
-	> .me-container {
-		position: fixed;
-		z-index: 100;
-		overflow: hidden;
-		box-shadow: 0px 5px 12px 2px rgba(#111, 0.5);
-		transition-property: border-color;
-		transition-duration: 0.2s;
+        &:hover
+          color: #fff
+          text-decoration: underline
 
-		&.active-speaker {
-			border-color: #fff;
-		}
+  > .me-container
+    position: absolute // 修改为 absolute，以支持拖拽
+    z-index: 100
+    overflow: hidden
+    box-shadow: 0px 5px 12px 2px rgba(#111, 0.5)
+    border-radius: 10px // 调整为圆角
+    border: 1px solid rgba(#fff, 0.15)
 
-		+desktop() {
-			height: 250px;
-			width: 294px;
-			bottom: 60px;
-			left: 20px;
-			border: 1px solid rgba(#fff, 0.15);
-		}
+    +desktop()
+      height: 250px
+      width: 350px
+      bottom: 60px
+      left: 200px // 初始位置向右移动
 
-		+mobile() {
-			height: 220px;
-			width: 200px;
-			bottom: 50px;
-			left: 10px;
-			border: 1px solid rgba(#fff, 0.25);
-		}
-	}
+    +mobile()
+      height: 220px
+      width: 280px
+      bottom: 50px
+      left: 100px // 初始位置向右移动
 
-	> .chat-input-container {
-		position: fixed;
-		z-index: 100;
-		overflow: hidden;
-		box-shadow: 0px 5px 12px 2px rgba(#111, 0.5);
+    &.active-speaker
+      border-color: #fff
 
-		+desktop() {
-			height: 30px;
-			width: 294px;
-			bottom: 20px;
-			left: 20px;
-			border: 1px solid rgba(#fff, 0.15);
-		}
+    // 控制按钮的样式
+    > .controls
+      position: absolute
+      top: 10px
+      right: 10px
+      display: flex
+      flex-direction: column
 
-		+mobile() {
-			height: 30px;
-			width: 200px;
-			bottom: 10px;
-			left: 10px;
-			border: 1px solid rgba(#fff, 0.25);
-		}
-	}
-	
-	> .sidebar {
-		position: fixed;
-		z-index: 101;
-		top: calc(50% - 60px);
-		height: 120px;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
+      > .control-button
+        background-color: #fff
+        border: none
+        border-radius: 50%
+        width: 32px
+        height: 32px
+        margin-bottom: 8px
+        display: flex
+        align-items: center
+        justify-content: center
+        cursor: pointer
+        transition: background-color 0.2s
 
-		+desktop() {
-			left: 20px;
-			width: 36px;
-			margin-top: -60px;
-		}
+        &:hover
+          background-color: #e0e0e0
 
-		+mobile() {
-			left: 10px;
-			width: 32px;
-			margin-top: -80px;
-		}
+        > svg
+          color: #000
+          width: 20px
+          height: 20px
 
-		> .button {
-			flex: 0 0 auto;
-			margin: 4px 0;
-			background-position: center;
-			background-size: 75%;
-			background-repeat: no-repeat;
-			background-color: $COLOR_BG_1;
-			cursor: pointer;
-			transition-property: opacity, background-color;
-			transition-duration: 0.2s;
-			border-radius: 100%;
+  // 移除聊天输入框的样式，因为我们不再需要它
+  // > .chat-input-container
+  //   // 原有样式被移除
 
-			+desktop() {
-				height: 36px;
-				width: 36px;
-			}
+  > .sidebar
+    position: fixed
+    z-index: 101
+    top: calc(50% - 60px)
+    height: 120px
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
 
-			+mobile() {
-				height: 32px;
-				width: 32px;
-			}
+    +desktop()
+      left: 20px
+      width: 36px
+      margin-top: -60px
 
-			&.on {
-				background-color: rgba(#fff, 0.7);
-			}
+    +mobile()
+      left: 10px
+      width: 32px
+      margin-top: -80px
 
-			&.disabled {
-				pointer-events: none;
-				opacity: 0.5;
-				transition-duration: 0s;
-			}
+    > .button
+      flex: 0 0 auto
+      margin: 4px 0
+      background-position: center
+      background-size: 75%
+      background-repeat: no-repeat
+      background-color: $COLOR_BG_1
+      cursor: pointer
+      transition-property: opacity, background-color
+      transition-duration: 0.2s
+      border-radius: 100%
 
-			&.hide-videos {
-				background-image: url('/resources/images/icon_video_white_on.svg');
+      +desktop()
+        height: 36px
+        width: 36px
 
-				&.on {
-					background-image: url('/resources/images/icon_video_black_off.svg');
-				}
-			}
+      +mobile()
+        height: 32px
+        width: 32px
 
-			&.mute-audio {
-				background-image: url('/resources/images/icon_volume_white_on.svg');
+      &.on
+        background-color: rgba(#fff, 0.7)
 
-				&.on {
-					background-image: url('/resources/images/icon_volume_black_off.svg');
-				}
-			}
+      &.disabled
+        pointer-events: none
+        opacity: 0.5
+        transition-duration: 0s
 
-			&.restart-ice {
-				background-image: url('/resources/images/icon_restart_ice_white.svg');
-			}
-		}
-	}
-}
+      &.hide-videos
+        background-image: url('/resources/images/icon_video_white_on.svg')
 
-@keyframes Room-info-state-connecting {
-	50% { background-color: rgba(orange, 0.75); }
-}
+        &.on
+          background-image: url('/resources/images/icon_video_black_off.svg')
+
+      &.mute-audio
+        background-image: url('/resources/images/icon_volume_white_on.svg')
+
+        &.on
+          background-image: url('/resources/images/icon_volume_black_off.svg')
+
+      &.restart-ice
+        background-image: url('/resources/images/icon_restart_ice_white.svg')
+
+@keyframes Room-info-state-connecting
+  50%
+    background-color: rgba(orange, 0.75)

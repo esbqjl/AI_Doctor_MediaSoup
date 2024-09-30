@@ -9,16 +9,20 @@ import { withRoomContext } from '../RoomContext';
 import * as requestActions from '../redux/requestActions';
 import { Appear } from './transitions';
 import Me from './Me';
-import ChatInput from './ChatInput';
 import Peers from './Peers';
 import Stats from './Stats';
 import Ai from './Ai';
 import Notifications from './Notifications';
 import NetworkThrottle from './NetworkThrottle';
 
+
+import { IoIosMic, IoIosMicOff } from 'react-icons/io';
+import { FaVideo, FaVideoSlash } from 'react-icons/fa6';
+
+import Draggable from 'react-draggable';
+
 class Room extends React.Component
 {
-
 	render()
 	{
 		const {
@@ -27,12 +31,15 @@ class Room extends React.Component
 			me,
 			amActiveSpeaker,
 			onRoomLinkCopy
-		}	= this.props;
+		} = this.props;
 
 		const mediasoupClientVersion = room.mediasoupClientVersion === '__MEDIASOUP_CLIENT_VERSION__'
 			? 'dev'
 			: room.mediasoupClientVersion;
+
 		
+		const isAudioMuted = me.audioMuted;
+		const isVideoOff = !me.videoVisible;
 
 		return (
 			<Appear duration={300}>
@@ -59,11 +66,9 @@ class Room extends React.Component
 								rel='noopener noreferrer'
 								onClick={(event) =>
 								{
-									// If this is a 'Open in new window/tab' don't prevent
-									// click default action.
+									
 									if (
 										event.ctrlKey || event.shiftKey || event.metaKey ||
-										// Middle click (IE > 9 and everyone else).
 										(event.button && event.button === 1)
 									)
 									{
@@ -83,23 +88,54 @@ class Room extends React.Component
 
 					<Peers />
 
-					<div
-						className={classnames('me-container', {
-							'active-speaker' : amActiveSpeaker
-						})}
-					>
-						<Me />
-					</div>
+					
+					<Draggable>
+						<div
+							className={classnames('me-container', {
+								'active-speaker': amActiveSpeaker
+							})}
+						>
+							
+							<div className='controls'>
+								<button
+									className='control-button'
+									onClick={() =>
+									{
+										isAudioMuted
+											? roomClient.unmuteMic()
+											: roomClient.muteMic();
+									}}
+								>
+									{isAudioMuted ? <IoIosMicOff /> : <IoIosMic />}
+								</button>
+								<button
+									className='control-button'
+									onClick={() =>
+									{
+										isVideoOff
+											? roomClient.enableWebcam()
+											: roomClient.disableWebcam();
+									}}
+								>
+									{isVideoOff ? <FaVideoSlash /> : <FaVideo />}
+								</button>
+							</div>
 
-					<div className='chat-input-container'>
+							
+							<Me />
+						</div>
+					</Draggable>
+
+					
+					{/* <div className='chat-input-container'>
 						<ChatInput />
-					</div>
+					</div> */}
 
 					<div className='sidebar'>
 						<div
 							className={classnames('button', 'hide-videos', {
-								on       : me.audioOnly,
-								disabled : me.audioOnlyInProgress
+								on: me.audioOnly,
+								disabled: me.audioOnlyInProgress
 							})}
 							data-tip={'Show/hide participants\' video'}
 							onClick={() =>
@@ -109,10 +145,9 @@ class Room extends React.Component
 									: roomClient.enableAudioOnly();
 							}}
 						/>
-
 						<div
 							className={classnames('button', 'mute-audio', {
-								on : me.audioMuted
+								on: me.audioMuted
 							})}
 							data-tip={'Mute/unmute participants\' audio'}
 							onClick={() =>
@@ -122,23 +157,23 @@ class Room extends React.Component
 									: roomClient.muteAudio();
 							}}
 						/>
-
 						<div
 							className={classnames('button', 'restart-ice', {
-								disabled : me.restartIceInProgress
+								disabled: me.restartIceInProgress
 							})}
 							data-tip='Restart ICE'
 							onClick={() => roomClient.restartIce()}
 						/>
 					</div>
-					<Stats/>
-					
-					<Ai    />
-					<If condition={window.NETWORK_THROTTLE_SECRET}>
+
+					<Stats />
+					<Ai />
+
+					{window.NETWORK_THROTTLE_SECRET &&
 						<NetworkThrottle
 							secret={window.NETWORK_THROTTLE_SECRET}
 						/>
-					</If>
+					}
 
 					<ReactTooltip
 						type='light'
@@ -154,7 +189,7 @@ class Room extends React.Component
 
 	componentDidMount()
 	{
-		const { roomClient }	= this.props;
+		const { roomClient } = this.props;
 
 		roomClient.join();
 	}
@@ -162,30 +197,30 @@ class Room extends React.Component
 
 Room.propTypes =
 {
-	roomClient      : PropTypes.any.isRequired,
-	room            : appPropTypes.Room.isRequired,
-	me              : appPropTypes.Me.isRequired,
-	amActiveSpeaker : PropTypes.bool.isRequired,
-	onRoomLinkCopy  : PropTypes.func.isRequired
+	roomClient: PropTypes.any.isRequired,
+	room: appPropTypes.Room.isRequired,
+	me: appPropTypes.Me.isRequired,
+	amActiveSpeaker: PropTypes.bool.isRequired,
+	onRoomLinkCopy: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) =>
 {
 	return {
-		room            : state.room,
-		me              : state.me,
-		amActiveSpeaker : state.me.id === state.room.activeSpeakerId
+		room: state.room,
+		me: state.me,
+		amActiveSpeaker: state.me.id === state.room.activeSpeakerId
 	};
 };
 
 const mapDispatchToProps = (dispatch) =>
 {
 	return {
-		onRoomLinkCopy : () =>
+		onRoomLinkCopy: () =>
 		{
 			dispatch(requestActions.notify(
 				{
-					text : 'Room link copied to the clipboard'
+					text: 'Room link copied to the clipboard'
 				}));
 		}
 	};
