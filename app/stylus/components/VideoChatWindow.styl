@@ -1,0 +1,50 @@
+[data-component='VideoChatWindow']
+  display: flex
+  flex-direction: column
+  height: 100vh
+  width: 100%
+  background-color: #333 // Dark background to highlight video elements
+  position: relative
+
+  > .me-container
+    position: absolute
+    bottom: 10px
+    right: 10px
+    width: 200px
+    height: 150px
+    background-color: rgba(255, 255, 255, 0.2) // Semi-transparent for visibility
+    border-radius: 8px
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) // Small shadow for depth
+
+    > [data-component='Me']
+      height: 100%
+      width: 100%
+
+  > .peers-container
+    display: grid
+    flex-grow: 1
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr))
+    grid-gap: 10px
+    padding: 10px
+    justify-items: center
+    align-items: center
+    overflow-y: auto // Scrollable if peers overflow
+
+    > .peer-container
+      background-color: #e0e0e0 // Light background for each peer
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
+      border-radius: 8px
+      transition: transform 0.2s ease-in-out
+      cursor: pointer
+
+      &.focused-peer
+        transform: scale(1.1) // Slight zoom effect on focused peers
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2)
+
+  // Responsive design to ensure good look on different devices
+  +desktop()
+    padding: 20px
+
+  +mobile()
+    padding: 10px
+    height: 100vh

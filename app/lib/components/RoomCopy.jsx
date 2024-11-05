@@ -1,25 +1,20 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import ReactTooltip from 'react-tooltip';
 import classnames from 'classnames';
-import clipboardCopy from 'clipboard-copy';
-import * as appPropTypes from './appPropTypes';
-import { withRoomContext } from '../RoomContext';
+import ReactTooltip from 'react-tooltip';
 import * as requestActions from '../redux/requestActions';
-import { Appear } from './transitions';
-import Me from './Me';
-import ChatInput from './ChatInput';
-import Peers from './Peers';
+import { withRoomContext } from '../RoomContext';
+import Notifications from './Notifications';
 import Stats from './Stats';
 import Ai from './Ai';
-import Notifications from './Notifications';
+import * as appPropTypes from './appPropTypes';
+import ChatInput from './ChatInput';
 import NetworkThrottle from './NetworkThrottle';
-import VideoChatWindow from './VideoChatWindow'
+import VideoChatWindow from './VideoChatWindow'; // Import new component
 
 class Room extends React.Component
 {
-
 	render()
 	{
 		const {
@@ -28,12 +23,11 @@ class Room extends React.Component
 			me,
 			amActiveSpeaker,
 			onRoomLinkCopy
-		}	= this.props;
+		} = this.props;
 
 		const mediasoupClientVersion = room.mediasoupClientVersion === '__MEDIASOUP_CLIENT_VERSION__'
 			? 'dev'
 			: room.mediasoupClientVersion;
-		
 
 		return (
 			<Appear duration={300}>
@@ -51,56 +45,11 @@ class Room extends React.Component
 						<p className='text'><span className='label'>handler:&nbsp;&nbsp;</span>{room.mediasoupClientHandler}</p>
 					</div>
 
-					<div className='room-link-wrapper'>
-						<div className='room-link'>
-							<a
-								className='link'
-								href={room.url}
-								target='_blank'
-								rel='noopener noreferrer'
-								onClick={(event) =>
-								{
-									// If this is a 'Open in new window/tab' don't prevent
-									// click default action.
-									if (
-										event.ctrlKey || event.shiftKey || event.metaKey ||
-										// Middle click (IE > 9 and everyone else).
-										(event.button && event.button === 1)
-									)
-									{
-										return;
-									}
-
-									event.preventDefault();
-
-									clipboardCopy(room.url)
-										.then(onRoomLinkCopy);
-								}}
-							>
-								invitation link
-							</a>
-						</div>
-					</div>
-
-					<Peers />
-
-					{/* <div
-						className={classnames('me-container', {
-							'active-speaker' : amActiveSpeaker
-						})}
-					>
-						<Me />
-					</div>
+					{/* Render the VideoChatWindow component */}
+					<VideoChatWindow />
 
 					<div className='chat-input-container'>
 						<ChatInput />
-					</div> */}
-					<div
-						className={classnames('vid-container', {
-							'active-speaker' : amActiveSpeaker
-						})}
-					>
-						<VideoChatWindow />
 					</div>
 
 					<div className='sidebar'>
@@ -139,9 +88,11 @@ class Room extends React.Component
 							onClick={() => roomClient.restartIce()}
 						/>
 					</div>
-					<Stats/>
-					
-					<Ai    />
+
+					<Stats />
+
+					<Ai />
+
 					<If condition={window.NETWORK_THROTTLE_SECRET}>
 						<NetworkThrottle
 							secret={window.NETWORK_THROTTLE_SECRET}
@@ -162,14 +113,12 @@ class Room extends React.Component
 
 	componentDidMount()
 	{
-		const { roomClient }	= this.props;
-
+		const { roomClient } = this.props;
 		roomClient.join();
 	}
 }
 
-Room.propTypes =
-{
+Room.propTypes = {
 	roomClient      : PropTypes.any.isRequired,
 	room            : appPropTypes.Room.isRequired,
 	me              : appPropTypes.Me.isRequired,
@@ -204,4 +153,4 @@ const RoomContainer = withRoomContext(connect(
 	mapDispatchToProps
 )(Room));
 
-export default RoomContainer;
+export default RoomContainer1;
