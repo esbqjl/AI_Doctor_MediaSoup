@@ -1,0 +1,51 @@
+@import 'common'
+
+.video-chat-window
+  display flex
+  flex-direction column
+  align-items center
+  justify-content space-between
+  background-color #48df0c
+  width 600px
+  height 400px
+  padding 10px
+  border-radius 12px
+  box-shadow 0 4px 12px rgba(0, 0, 0, 0.1)
+
+.video-grid
+  display grid
+  grid-template-columns repeat(auto-fill, minmax(120px, 1fr))
+  gap 10px
+  width 100%
+  height calc(100% - 50px)
+  justify-items center
+  align-items start
+
+.peer-view
+  @extend .common-video-layout
+
+.controls
+  display flex
+  justify-content center
+  gap 10px
+  padding-top 8px
+
+.control-button
+  background-color #fff
+  border none
+  border-radius 50%
+  width 32px
+  height 32px
+  display flex
+  align-items center
+  justify-content center
+  cursor pointer
+  transition background-color 0.2s
+
+  &:hover
+    background-color #e0e0e0
+
+  > svg
+    color #000
+    width 20px
+    height 20px
