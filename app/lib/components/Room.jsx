@@ -14,7 +14,7 @@ import Stats from './Stats';
 import Ai from './Ai';
 import Notifications from './Notifications';
 import NetworkThrottle from './NetworkThrottle';
-
+import VideoChatWindow from './VideoChatWindow';
 
 import { IoIosMic, IoIosMicOff } from 'react-icons/io';
 import { FaVideo, FaVideoSlash } from 'react-icons/fa6';
@@ -44,6 +44,7 @@ class Room extends React.Component
 		return (
 			<Appear duration={300}>
 				<div data-component='Room'>
+
 					<Notifications />
 
 					<div className='state'>
@@ -87,8 +88,7 @@ class Room extends React.Component
 					</div>
 
 					<Peers />
-
-					
+					{/* <VideoChatWindow /> */}
 					<Draggable>
 						<div
 							className={classnames('me-container', {
