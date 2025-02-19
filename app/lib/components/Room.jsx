@@ -14,8 +14,7 @@ import Stats from './Stats';
 import Ai from './Ai';
 import Notifications from './Notifications';
 import NetworkThrottle from './NetworkThrottle';
-
-
+import VideoChatWindow from './VideoChatWindow';
 import { IoIosMic, IoIosMicOff } from 'react-icons/io';
 import { FaVideo, FaVideoSlash } from 'react-icons/fa6';
 
@@ -44,8 +43,8 @@ class Room extends React.Component
 		return (
 			<Appear duration={300}>
 				<div data-component='Room'>
-					<Notifications />
 
+					<Notifications />
 					<div className='state'>
 						<div className={classnames('icon', room.state)} />
 						<p className={classnames('text', room.state)}>{room.state}</p>
@@ -86,10 +85,23 @@ class Room extends React.Component
 						</div>
 					</div>
 
-					<Peers />
+					{/* <Peers /> */}
 
-					
-					<Draggable>
+					{/* Centered Draggable VideoChatWindow */}
+					<div className="video-chat-wrapper">
+						<Draggable bounds="parent">
+							<div className="video-chat-container">
+								<VideoChatWindow
+									roomClient={roomClient}
+									isAudioMuted={isAudioMuted}
+									isVideoOff={isVideoOff}
+									amActiveSpeaker={amActiveSpeaker}
+								/>
+							</div>
+						</Draggable>
+					</div>
+
+					{/* <Draggable>
 						<div
 							className={classnames('me-container', {
 								'active-speaker': amActiveSpeaker
@@ -124,7 +136,7 @@ class Room extends React.Component
 							
 							<Me />
 						</div>
-					</Draggable>
+					</Draggable> */}
 
 					
 					{/* <div className='chat-input-container'>

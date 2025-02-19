@@ -4,8 +4,31 @@
   position: relative
   height: 100%
   width: 100%
+  display: flex
+  justify-content: center
+  align-items: center
 
   AppearFadeIn(300ms)
+
+
+  > .video-chat-wrapper
+    display flex
+    justify-content center
+    align-items center
+    width 100% // Set width to center within Room component
+    height 100% // Optional to ensure it aligns vertically as well
+
+  > .video-chat-container
+    display: flex
+    justify-content: center
+    align-items: center
+    width: 400px  // Fixed width
+    height: 400px // Fixed height
+    overflow: hidden
+    border-radius: 12px
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
+    background-color: #48df0c
+
 
   > .state
     position: fixed

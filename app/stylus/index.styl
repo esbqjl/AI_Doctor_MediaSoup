@@ -6,77 +6,69 @@ global-reset();
 @import './mixins';
 @import './fonts';
 @import './reset';
+@import './common'; // Import common styles here
 
 html {
-	height: 100%;
-	box-sizing: border-box;
-	// background-image: url('/resources/images/body-bg-2.jpg');
-	// background-attachment: fixed;
-	// background-position: center;
-	// background-size: cover;
-	// background-repeat: no-repeat;
-	background: #E3E3E3;
-	background: linear-gradient(to top, #E3E3E3, #E3E3E3);
-	font-family: 'Roboto';
-	font-weight: 300;
+  height: 100%;
+  box-sizing: border-box;
+  background: #E3E3E3;
+  background: linear-gradient(to top, #E3E3E3, #E3E3E3);
+  font-family: 'Roboto';
+  font-weight: 300;
 
-	+desktop() {
-		font-size: 16px;
-	}
+  +desktop() {
+    font-size: 16px;
+  }
 
-	+mobile() {
-		font-size: 12px;
-	}
+  +mobile() {
+    font-size: 12px;
+  }
 }
 
 body {
-	height: 100%;
+  height: 100%;
 }
 
 #mediasoup-demo-app-container {
-	height: 100%;
-	width: 100%;
+  height: 100%;
+  width: 100%;
 
-	// Components
-	@import './components/Room';
-	@import './components/Me';
-	@import './components/ChatInput';
-	@import './components/Peers';
-	@import './components/Peer';
-	@import './components/PeerView';
-	@import './components/Stats';
-	@import './components/Ai';
-	@import './components/Notifications';
-	@import './components/NetworkThrottle';
-	@import './components/NavBar'
-	@import './components/Highlights'
-	@import './components/HealthSummary'
-	@import './components/DoctorSchedule'
-	@import './components/DateDisplay'
-	@import './components/TopBar'
-	@import './components/SuggestedQuestion'
-	@import './components/ClinicalCodes'
-	@import './components/Widget'
-	@import '../node_modules/react-grid-layout/css/styles.css' as css;
-	@import '../node_modules/react-resizable/css/styles.css' as css;
-
+  // Components
+  @import './components/Room';
+  @import './components/Me';
+  @import './components/ChatInput';
+  @import './components/Peers';
+  @import './components/Peer';
+  @import './components/PeerView';
+  @import './components/Stats';
+  @import './components/Ai';
+  @import './components/Notifications';
+  @import './components/NetworkThrottle';
+  @import './components/NavBar';
+  @import './components/Highlights';
+  @import './components/HealthSummary';
+  @import './components/DoctorSchedule';
+  @import './components/DateDisplay';
+  @import './components/TopBar';
+  @import './components/SuggestedQuestion';
+  @import './components/ClinicalCodes';
+  @import './components/Widget';
+  @import '../node_modules/react-grid-layout/css/styles.css' as css;
+  @import '../node_modules/react-resizable/css/styles.css' as css;
 }
 
-// Hack to detect in JS the current media query
 #mediasoup-demo-app-media-query-detector {
-	position: relative;
-	z-index: -1000;
-	bottom: 0;
-	left: 0;
-	height: 1px;
-	width: 1px;
+  position: relative;
+  z-index: -1000;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  width: 1px;
 
-	// In desktop let it "visible" so elem.offsetParent returns the parent element
-	+desktop() {}
+  +desktop() {}
 
-	// In mobile ensure it's not displayed so elem.offsetParent returns null
-	+mobile() {
-		display: none;
-		position: fixed; // Required for old IE
-	}
+  +mobile() {
+    display: none;
+    position: fixed;
+  }
 }
